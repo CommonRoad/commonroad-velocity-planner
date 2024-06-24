@@ -33,7 +33,9 @@ class RaceLine:
     num_lane_change_actions: int
 
     reference_path: np.ndarray
+
     velocity_profile: np.ndarray
+
     interpoint_distance: np.ndarray
     path_length_per_point: np.ndarray
     path_orientation: np.ndarray
