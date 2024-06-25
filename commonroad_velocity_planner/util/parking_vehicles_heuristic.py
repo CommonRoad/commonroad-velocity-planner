@@ -4,6 +4,7 @@ import numpy as np
 # third party
 from shapely import Polygon as ShapelyPolygon
 from shapely import LineString as ShapelyLine
+from shapely import Point as ShapelyPoint
 from shapely import distance
 
 # commonroad
@@ -15,9 +16,9 @@ from typing import Tuple
 
 @unique
 class LaneletEdge(Enum):
-    LEFT_EDGE: 1
-    RIGHT_EDGE: 2
-    CENTER: 3
+    LEFT_EDGE = 1
+    RIGHT_EDGE = 2
+    CENTER = 3
 
 
 def heuristically_identify_if_vehicle_on_street_is_parking(
@@ -43,13 +44,13 @@ def heuristically_identify_if_vehicle_on_street_is_parking(
     parking_flag: bool = False
 
     # check if partially on lanelet
-    if(not dyn_obstacle.initial_center_lanelet_ids):
+    if(len(lanelet_network.find_lanelet_by_position([dyn_obstacle.initial_state.position])) == 0):
         parking_flag = True
         smallest_distance: float = np.inf
-    elif(True):
+    else:
         # Check if near edge of lanelet network and low/no velocity
         lanelet: Lanelet = lanelet_network.find_lanelet_by_id(
-            lanelet_network.find_lanelet_by_position(dyn_obstacle.initial_state.position)[0][0]
+            lanelet_network.find_lanelet_by_position([dyn_obstacle.initial_state.position])[0][0]
         )
         closest_line, smallest_distance = center_closer_to_edge(
                 dyn_obstacle,
@@ -68,7 +69,7 @@ def heuristically_identify_if_vehicle_on_street_is_parking(
             parking_flag = False
 
         # 3. if false, check if velocity is small
-        elif(dyn_obstacle.initial_state.velocity < velocity_threshold_mps):
+        elif(dyn_obstacle.initial_state.velocity > velocity_threshold_mps):
             parking_flag = False
 
         else:
@@ -92,30 +93,30 @@ def center_closer_to_edge(
     smallest_distance: float = None
 
     distance_right: float = distance(
-            dyn_obs.occupancy_at_time(0).shape.shapely_object,
+            ShapelyPoint(dyn_obs.initial_state.position[0], dyn_obs.initial_state.position[1]),
             ShapelyLine(lanelet.right_vertices)
     )
 
     distance_left: float = distance(
-            dyn_obs.occupancy_at_time(0).shape.shapely_object,
-            ShapelyLine(lanelet.right_vertices)
+            ShapelyPoint(dyn_obs.initial_state.position[0], dyn_obs.initial_state.position[1]),
+            ShapelyLine(lanelet.left_vertices)
     )
 
     distance_center: float = distance(
-        dyn_obs.occupancy_at_time(0).shape.shapely_object,
+        ShapelyPoint(dyn_obs.initial_state.position[0], dyn_obs.initial_state.position[1]),
         ShapelyLine(lanelet.center_vertices)
     )
 
-    if(distance_right > distance_left and distance_right > distance_center):
+    if(distance_right < distance_left and distance_right < distance_center):
         closest_line = LaneletEdge.RIGHT_EDGE
         smallest_distance = distance(
-            dyn_obs.occupancy_at_time(0).shape.shapely_object,
+            ShapelyPoint(dyn_obs.initial_state.position[0], dyn_obs.initial_state.position[1]),
             ShapelyLine(lanelet.left_vertices)
         )
-    elif(distance_left > distance_right and distance_left > distance_center):
+    elif(distance_left < distance_right and distance_left < distance_center):
         closest_line = LaneletEdge.LEFT_EDGE
         smallest_distance = distance(
-            dyn_obs.occupancy_at_time(0).shape.shapely_object,
+            ShapelyPoint(dyn_obs.initial_state.position[0], dyn_obs.initial_state.position[1]),
             ShapelyLine(lanelet.right_vertices)
         )
     else:
