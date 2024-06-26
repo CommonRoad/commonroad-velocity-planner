@@ -63,8 +63,8 @@ class VelocityBehaviorPlanner:
             vehicle_velocity_y: float,
             current_speed_limit: float = 10,
             lateral_threshold: float = 0.5,
-            parking_pass_speed_ms: float = 2,
-            look_ahead_sec: float=10
+            parking_pass_speed_ms: float = 1.5,
+            look_ahead_sec: float = 10
     ) -> np.ndarray:
         """
         Updates velocity profile given parking vehicles
@@ -101,21 +101,21 @@ class VelocityBehaviorPlanner:
             ):
                 continue
 
-            self._logger.warning("Starting Heuristic Check")
+            self._logger.debug("Starting Heuristic Check")
 
             parking, distance_obs = heuristically_identify_if_vehicle_on_street_is_parking(
                 dyn_obstacle=dyn_obs,
                 lanelet_network=scenario.lanelet_network,
             )
             if(parking):
-                self._logger.warning(f"Heuristic Found parking vehicle with id {dyn_obs.obstacle_id}")
+                self._logger.debug(f"Heuristic Found parking vehicle with id {dyn_obs.obstacle_id}")
                 distance_list.append(distance_obs)
 
         # clipp to parking pass distance
         smallest_distance_parking: float = min(distance_list)
         print(len(distance_list))
         if(smallest_distance_parking < lateral_threshold):
-            self._logger.warning("identified vehicles and clip")
+            self._logger.debug("identified vehicles and clip")
             # FIXME: Only clip the parts that are closer in the parking horizon.
             # FIXME: Take distance of point furthest into road instead of center point for smallest distance
 
@@ -129,8 +129,8 @@ class VelocityBehaviorPlanner:
             ) + idx_start
 
 
-            self._logger.warning(f"idx_start={idx_start}  --  idx_end={idx_end}")
-            self._logger.warning(
+            self._logger.debug(f"idx_start={idx_start}  --  idx_end={idx_end}")
+            self._logger.debug(
                 f"start_ref_path={ref_path_length_per_point[idx_start]} "
                 f"-- end_ref_path={ref_path_length_per_point[idx_end]}"
                 f"-- horizon_m={look_ahead_m}")
