@@ -1,8 +1,10 @@
 import math
+import time
 from logging import Logger
 
 import numpy as np
 import csv
+from scipy.spatial import KDTree
 
 # commonroad
 from commonroad.scenario.scenario import Scenario
@@ -52,6 +54,8 @@ class VelocityBehaviorPlanner:
     def update_velocity(
             self,
             scenario: Scenario,
+            reference_path: np.ndarray,
+            ref_path_length_per_point: np.ndarray,
             velocity_profile: np.ndarray,
             vehicle_position_x: float,
             vehicle_position_y: float,
@@ -114,7 +118,25 @@ class VelocityBehaviorPlanner:
             self._logger.warning("identified vehicles and clip")
             # FIXME: Only clip the parts that are closer in the parking horizon.
             # FIXME: Take distance of point furthest into road instead of center point for smallest distance
-            velocity_profile = velocity_profile.clip(max=parking_pass_speed_ms)
+
+            kd_tree = KDTree(reference_path)
+            _, idx_start = kd_tree.query(np.asarray([vehicle_position_x, vehicle_position_y]))
+            # FIXME smarter conversion
+            idx_end: int = ref_path_length_per_point[idx_start:].tolist().index(
+                min(ref_path_length_per_point[idx_start:].tolist(),
+                    key=lambda x: abs(x - look_ahead_m - ref_path_length_per_point[idx_start])
+                    )
+            ) + idx_start
+
+
+            self._logger.warning(f"idx_start={idx_start}  --  idx_end={idx_end}")
+            self._logger.warning(
+                f"start_ref_path={ref_path_length_per_point[idx_start]} "
+                f"-- end_ref_path={ref_path_length_per_point[idx_end]}"
+                f"-- horizon_m={look_ahead_m}")
+
+
+            velocity_profile[idx_start:idx_end] = velocity_profile[idx_start:idx_end].clip(max=parking_pass_speed_ms)
 
 
         return velocity_profile
@@ -250,16 +272,21 @@ if __name__ == "__main__":
 
     vel_profile_adj = np.append(vel_profile_adj, [vel_profile_adj[-1], vel_profile_adj[-1], vel_profile_adj[-1], vel_profile_adj[-1], vel_profile_adj[-1], vel_profile_adj[-1], vel_profile_adj[-1], vel_profile_adj[-1], vel_profile_adj[-1], vel_profile_adj[-1]], axis=0)
 
+    t_start = time.perf_counter()
     vel_profile_updated = vbp.update_velocity(
         scenario=scenario,
+        reference_path=route.reference_path,
+        ref_path_length_per_point=route.path_length_per_point,
         velocity_profile=vel_profile_adj,
         vehicle_position_x=698064,
         vehicle_position_y=5349082,
         vehicle_velocity_x=5,
         vehicle_velocity_y=0,
-        parking_pass_speed_ms=0.1234567,
-        lateral_threshold=5
+        parking_pass_speed_ms=2,
+        lateral_threshold=5,
     )
+
+    print(f"Time of execution: {time.perf_counter() - t_start}")
 
     with open('file.csv', 'w', newline='') as file:
         writer = csv.writer(file)
