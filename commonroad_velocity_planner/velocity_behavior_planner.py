@@ -1,6 +1,6 @@
 import math
 import time
-from logging import Logger
+from logging import Logger, DEBUG
 
 import numpy as np
 import csv
@@ -38,6 +38,7 @@ class VelocityBehaviorPlanner:
     """
 
     _logger = Logger(__name__)
+    _logger.setLevel(DEBUG)
 
     def __init__(
             self,
@@ -116,8 +117,6 @@ class VelocityBehaviorPlanner:
         print(len(distance_list))
         if(smallest_distance_parking < lateral_threshold):
             self._logger.debug("identified vehicles and clip")
-            # FIXME: Only clip the parts that are closer in the parking horizon.
-            # FIXME: Take distance of point furthest into road instead of center point for smallest distance
 
             kd_tree = KDTree(reference_path)
             _, idx_start = kd_tree.query(np.asarray([vehicle_position_x, vehicle_position_y]))
