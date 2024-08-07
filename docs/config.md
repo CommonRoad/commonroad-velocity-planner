@@ -1,0 +1,4 @@
+:::commonroad_velocity_planner.configuration.configuration_builder
+:::commonroad_velocity_planner.configuration.optimization_config
+:::commonroad_velocity_planner.configuration.vehicle_config
+:::commonroad_velocity_planner.configuration.velocity_planner_config
