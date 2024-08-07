@@ -1,0 +1,1 @@
+:::commonroad_velocity_planner.global_trajectory

@@ -16,20 +16,16 @@ for a dynamic single track model. As an advantage, this planner has a faster exe
 solver infeasibility and numerical instability.
 
 
-## Documentation
-See gitlab pages https://cps.pages.gitlab.lrz.de/commonroad/commonroad-velocity-planner/
-
-
 ## Example
 The color coding is always relative to the minimum and maximum values in the current velocity profile in mps.
 
 ### Linear Program Planner
-![Example_LP_1](/docs/assets/example_lp_1.png)
-![Example_LP_1](/docs/assets/example_lp_2.png)
+![Example_LP_1](assets/example_lp_1.png)
+![Example_LP_1](assets/example_lp_2.png)
 
 ### Bang-Bang-Control Planner
-![Example_LP_1](/docs/assets/example_bb_1.png)
-![Example_LP_1](/docs/assets/example_bb_2.png)
+![Example_LP_1](assets/example_bb_1.png)
+![Example_LP_1](assets/example_bb_2.png)
 
 
 
