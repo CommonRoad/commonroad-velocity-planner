@@ -8,7 +8,7 @@ readme = "README.md"
 keywords= ["autonomous", "automated", "vehicles", "driving", "motion", "planning", "velocity"]
 classifiers = [
     "Programming Language :: Python :: 3.9",
-    "License :: OSI Approved :: BSD license",
+    "License :: OSI Approved :: BSD License",
     "Operating System :: POSIX :: Linux",
 ]
 
