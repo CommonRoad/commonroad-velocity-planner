@@ -24,6 +24,7 @@ def visualize_velocity_over_arclength(
     :param test: if test, neither displays nor saves images
     """
     plt.cla()
+    plt.clf()
 
     plt.title("Velocity over arc length")
 
