@@ -1,10 +1,17 @@
 [tool.poetry]
 name = "commonroad-velocity-planner"
-version = "2024.1.0"
+version = "0.0.1"
 description = "CommonRoad Velocity Planner Toolbox"
 authors = ["Tobias Mascetta <tobias.mascetta@tum.de>", "Kilian Northoff <kilian.northoff@tum.de"]
 license = "BSD"
 readme = "README.md"
+keywords= ["autonomous", "automated", "vehicles", "driving", "motion", "planning", "velocity"]
+classifiers = [
+    "Programming Language :: Python :: 3.9",
+    "License :: OSI Approved :: BSD license",
+    "Operating System :: POSIX :: Linux",
+]
+
 packages = [{include = "commonroad_velocity_planner"}]
 
 
@@ -13,7 +20,9 @@ packages = [{include = "commonroad_velocity_planner"}]
 python = "^3.9"
 commonroad-io = ">=2022.2"
 commonroad-route-planner = ">=2024.1"
-numpy = ">=1.17.4"
+numpy = ">=1.17.4,<2.0"
+cvxpy = "^1.4"
+matplotlib = "<3.9"
 
 
 
