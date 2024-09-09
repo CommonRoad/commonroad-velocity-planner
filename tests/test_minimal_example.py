@@ -1,9 +1,12 @@
 import unittest
 from pathlib import Path
 
+# CommonRoad
 from commonroad.common.file_reader import CommonRoadFileReader
 from commonroad_route_planner.route_planner import RoutePlanner
 from commonroad_route_planner.route import Route
+
+# Own Code base
 from commonroad_velocity_planner.velocity_planner_interface import IVelocityPlanner
 from commonroad_velocity_planner.configuration.configuration_builder import ConfigurationBuilder
 from commonroad_velocity_planner.velocity_planning_problem import VppBuilder

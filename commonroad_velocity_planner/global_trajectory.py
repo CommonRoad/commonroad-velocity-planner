@@ -2,6 +2,7 @@ from dataclasses import dataclass
 import logging
 
 import numpy as np
+from scipy.spatial import KDTree
 
 # commonroad
 from commonroad.scenario.lanelet import LaneletNetwork
@@ -20,7 +21,7 @@ from commonroad_velocity_planner.velocity_planning_problem import (
 from commonroad_velocity_planner.utils.planning_problem import project_point_on_ref_path
 
 # typing
-from typing import List
+from typing import List, Tuple
 
 
 @dataclass
@@ -70,6 +71,55 @@ class GlobalTrajectory:
             raise ValueError(
                 f"Velocity profile contains entries < 0. Min val is {self.minimum_velocity}"
             )
+
+    def get_closest_idx(self, point: np.ndarray) -> int:
+        """
+        Get idx of closest point on global trajectory
+        :param point: (2,) numpy array
+        :return: index
+        """
+        kd_tree: KDTree = KDTree(self.reference_path)
+        _, idx = kd_tree.query(point)
+        return idx
+
+    def get_closest_point(self, point: np.ndarray) -> Tuple[int, np.ndarray]:
+        """
+        Get idx and coords of closest point on global trajectory
+        :param point:
+        :return:
+        """
+        idx: int = self.get_closest_idx(point)
+        return (idx, self.reference_path[idx])
+
+    def get_velocity_at_position_with_lookahead(
+        self, position: np.ndarray, lookahead_s: float = 2.0
+    ) -> float:
+        """
+        Get velocity at position. Uses closest point of global trajectory
+        :param position: (2,) position array
+        :return: velocity
+        """
+        idx_0: int = self.get_closest_idx(position)
+        v_0: float = self.velocity_profile[idx_0]
+        s_0: float = self.path_length_per_point[idx_0]
+
+        for idx in range(self.velocity_profile[idx_0:].shape[0]):
+            idx_1 = idx_0 + idx
+            v_1: float = self.velocity_profile[idx_1]
+            s_1: np.ndarray = self.path_length_per_point[idx_1]
+
+            delta_s = s_1 - s_0
+            delta_v = v_0 + (v_1 - v_0) / 2
+
+            if delta_v == 0:
+                delta_t: float = delta_s / v_0
+            else:
+                delta_t: float = (s_1 - s_0) / (v_0 + (v_1 - v_0) / 2)
+
+            if delta_t >= lookahead_s:
+                break
+
+        return self.velocity_profile[idx_1]
 
 
 def factory_from_route_and_velocity_profile(
