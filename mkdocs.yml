@@ -20,10 +20,12 @@ nav:
     - "Introduction": index.md
 
   - Example Usage:
+      - "Fast API": fast_api.md
       - "Minimal Example": minimal_example.md
       - "Long Example": long_example.md
       - "Different Planners": planner_switch_example.md
       - "Configurations": config_example.md
+      - "Reactive Planner Integration": reactive_planner_integration.md
 
   - Core API:
       - "Velocity Planner Interface": vpi.md
