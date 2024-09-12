@@ -107,14 +107,14 @@ def main(
 
 
 if __name__ == "__main__":
-    scenarios = "/home/tmasc/projects/velocity_planner/commonroad-velocity-planner/scenarios"
-    output_dir_path: str = "/home/tmasc/projects/velocity_planner/commonroad-velocity-planner/output"
+    scenarios = "./scenarios"
+    output_dir_path: str = "./output"
     for xml in sorted(os.listdir(scenarios)):
         _xml = scenarios + "/" + xml
         main(path_to_xml=_xml, save_img=True, test=False, output_dir_path=output_dir_path)
 
     def test_cr_challenge():
-        cr_challenge = "/home/tmasc/projects/route_planner/commonroad-route-planner/tutorial/commonroad_challenge_2023"
+        cr_challenge = "./tutorial/commonroad_challenge_2023"
         failed = 0
         for xml in sorted(os.listdir(cr_challenge)):
             _xml = cr_challenge + "/" + xml

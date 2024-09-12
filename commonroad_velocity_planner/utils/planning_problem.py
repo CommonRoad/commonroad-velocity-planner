@@ -77,7 +77,7 @@ def get_goal_velocity(
     :param min_velocity: minimum goal velocity. Some cr scenarios are negative, which might cause infeasibility problems
     :return: goal velocity as float
     """
-    if hasattr(goal_region.state_list[0], "velocity"):
+    if hasattr(goal_region.state_list[0], "velocity") and goal_region.state_list[0].velocity:
         # take lower value of velocity intervall
         if isinstance(goal_region.state_list[0].velocity, Interval):
             retval: float = goal_region.state_list[0].velocity.start
