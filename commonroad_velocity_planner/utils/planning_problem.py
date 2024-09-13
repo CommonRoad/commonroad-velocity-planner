@@ -77,15 +77,24 @@ def get_goal_velocity(
     :param min_velocity: minimum goal velocity. Some cr scenarios are negative, which might cause infeasibility problems
     :return: goal velocity as float
     """
-    if hasattr(goal_region.state_list[0], "velocity") and goal_region.state_list[0].velocity:
+    _logger = logging.getLogger(name="IVelocityPlanner.utils.planning_problem")
+
+    if hasattr(goal_region.state_list[0], "velocity"):
         # take lower value of velocity intervall
-        if isinstance(goal_region.state_list[0].velocity, Interval):
+        if goal_region.state_list[0].velocity is None:
+            # Velocity attribute is existing but set to none
+            _logger.info(
+                "Planning problem has goal velocity attribute but it is set to None. Taking default value."
+            )
+            retval = default_velocity
+
+        elif isinstance(goal_region.state_list[0].velocity, Interval):
             retval: float = goal_region.state_list[0].velocity.start
         else:
             retval: float = goal_region.state_list[0].velocity
+
     else:
         # For uncertain position route planner takes first polygon
-        _logger = logging.getLogger(name="IVelocityPlanner.utils.planning_problem")
         _logger.info(
             "For uncertain goal positions velocity planner takes center first polygon"
         )
