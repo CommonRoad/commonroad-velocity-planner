@@ -37,12 +37,6 @@ def global_trajectory_from_scenario_and_planning_problem(
     :param planning_problem: CommonRoad planning problem
     :return: CommonRoad global trajectory
     """
-    # route planner
-    route_planner = RoutePlanner(
-        lanelet_network=scenario.lanelet_network,
-        planning_problem=planning_problem
-    )
-
     return global_trajectory_from_lanelet_network_and_planning_problem(
         lanelet_network=scenario.lanelet_network, planning_problem=planning_problem
     )
@@ -58,7 +52,6 @@ def global_trajectory_from_lanelet_network_and_planning_problem(
     :param planning_problem: CommonRoad planning problem
     :return: CommonRoad global trajectory
     """
-
     # route planner
     route_planner = RoutePlanner(
         lanelet_network=lanelet_network,
