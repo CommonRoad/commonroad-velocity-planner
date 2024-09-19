@@ -1,5 +1,6 @@
 # commonroad
 from commonroad.planning.planning_problem import PlanningProblem
+from commonroad.scenario.lanelet import LaneletNetwork
 from commonroad.scenario.scenario import Scenario
 from commonroad_route_planner.route_planner import (
     RoutePlanner,
@@ -36,10 +37,31 @@ def global_trajectory_from_scenario_and_planning_problem(
     :param planning_problem: CommonRoad planning problem
     :return: CommonRoad global trajectory
     """
-
     # route planner
     route_planner = RoutePlanner(
         lanelet_network=scenario.lanelet_network,
+        planning_problem=planning_problem
+    )
+
+    return global_trajectory_from_lanelet_network_and_planning_problem(
+        lanelet_network=scenario.lanelet_network, planning_problem=planning_problem
+    )
+
+
+def global_trajectory_from_lanelet_network_and_planning_problem(
+    lanelet_network: LaneletNetwork,
+    planning_problem: PlanningProblem,
+) -> GlobalTrajectory:
+    """
+    Get global trajectory from lanelet network and planning problem
+    :param lanelet_network: CommonRoad lanelet network
+    :param planning_problem: CommonRoad planning problem
+    :return: CommonRoad global trajectory
+    """
+
+    # route planner
+    route_planner = RoutePlanner(
+        lanelet_network=lanelet_network,
         planning_problem=planning_problem,
     )
     route_generator: RouteGenerator = route_planner.plan_routes()
