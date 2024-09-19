@@ -29,7 +29,7 @@ scenario, planning_problem_set = CommonRoadFileReader("PATH/TO/YOUR/SCENARIO").o
 planning_problem = list(planning_problem_set.planning_problem_dict.values())[0]
 
 global_trajectory = fast_api.global_trajectory_from_lanelet_network_and_planning_problem(
-    scenario=scenario.lanelet_network, 
+    lanelet_network=scenario.lanelet_network, 
     planning_problem=planning_problem
 )
 
