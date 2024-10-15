@@ -84,9 +84,9 @@ def integrate_vehicle_state(
 ) -> VehicleState:
     """
     Integrate vehicle state with _dt
-    :param vehicle_state:
-    :param dt:
-    :return:
+    :param vehicle_state: vehicle state object
+    :param dt: time step size
+    :return: vehicle state object
     """
     s = vehicle_state.velocity * dt + vehicle_state.arclength
     v = max(
