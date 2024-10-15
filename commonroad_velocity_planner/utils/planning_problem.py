@@ -25,7 +25,7 @@ def project_goal_on_ref_path(
     elif hasattr(goal_region.state_list[0].position, "center"):
         goal_mid_position: np.ndarray = goal_region.state_list[0].position.center
     else:
-        # For uncertain position route planner takes first polygon
+        # For uncertain position reference_path planner takes first polygon
         goal_mid_position: np.ndarray = (
             goal_region.state_list[0].position.shapes[0].center
         )
@@ -94,7 +94,7 @@ def get_goal_velocity(
             retval: float = goal_region.state_list[0].velocity
 
     else:
-        # For uncertain position route planner takes first polygon
+        # For uncertain position reference_path planner takes first polygon
         _logger.info(
             "For uncertain goal positions velocity planner takes center first polygon"
         )
@@ -114,7 +114,7 @@ def get_goal_acceleration(
     if hasattr(goal_region.state_list[0], "acceleration"):
         retval: float = goal_region.state_list[0].acceleration
     else:
-        # For uncertain position route planner takes first polygon
+        # For uncertain position reference_path planner takes first polygon
         _logger = logging.getLogger(name="IVelocityPlanner.utils.planning_problem")
         _logger.info(
             "For uncertain goal positions velocity planner takes center first polygon"

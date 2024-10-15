@@ -2,7 +2,7 @@ import enum
 import logging
 
 # commonroad
-from commonroad_route_planner.route import Route
+from commonroad_route_planner.reference_path import ReferencePath
 
 # own code base
 from commonroad_velocity_planner.spline_profile import SplineProfile
@@ -14,7 +14,7 @@ from commonroad_velocity_planner.configuration.velocity_planner_config import (
 )
 from commonroad_velocity_planner.global_trajectory import (
     GlobalTrajectory,
-    factory_from_route_and_velocity_profile,
+    factory_from_reference_path_and_velocity_profile,
 )
 from commonroad_velocity_planner.velocity_planning_problem import (
     VelocityPlanningProblem,
@@ -44,7 +44,7 @@ class IVelocityPlanner:
         self._logger = logging.Logger(name="IVelocityPlanner", level=logging.WARNING)
 
         # TODO: Currently leave them as members so people have an easier time debugging
-        self._route: Route = None
+        self._reference_path: ReferencePath = None
         self._velocity_planner_config: VelocityPlannerConfig = None
         self._vpp: VelocityPlanningProblem = None
         self._planner: Union[LinearProgramPlanner, BangBangSTPlanner] = None
@@ -53,11 +53,11 @@ class IVelocityPlanner:
         self._velocity_planner: ImplementedPlanners = None
 
     @property
-    def route(self) -> Route:
+    def reference_path(self) -> ReferencePath:
         """
-        :return: cr route object
+        :return: cr reference_path object
         """
-        return self._route
+        return self._reference_path
 
     @property
     def velocity_planning_problem(self) -> VelocityPlanningProblem:
@@ -82,7 +82,7 @@ class IVelocityPlanner:
 
     def plan_velocity(
         self,
-        route: Route,
+        reference_path: ReferencePath,
         velocity_planning_problem: VelocityPlanningProblem,
         planner_config: VelocityPlannerConfig,
         velocity_planner: ImplementedPlanners = ImplementedPlanners.LinearProgramPlanner,
@@ -90,7 +90,7 @@ class IVelocityPlanner:
     ) -> Union[GlobalTrajectory, Tuple[GlobalTrajectory, SplineProfile]]:
         """
         Plans velocity profile and returns a global trajectory object, or a Tuple [Global Trajectory, Spline Profile].
-        :param route: cr route
+        :param reference_path: cr reference path
         :param planning_problem: cr planning problem
         :param planner_config: velocity planner config
         :param velocity_planner: selected velocity planner
@@ -103,7 +103,7 @@ class IVelocityPlanner:
         # TODO: For now make them members as this is usually easier to debug
         self._velocity_planner: ImplementedPlanners = velocity_planner
         self._velocity_planner_config: VelocityPlannerConfig = planner_config
-        self._route: Route = route
+        self._reference_path: ReferencePath = reference_path
         self._vpp: VelocityPlanningProblem = velocity_planning_problem
 
         # init planner
@@ -116,8 +116,8 @@ class IVelocityPlanner:
 
         # create global trajectory
         self._global_trajectory: GlobalTrajectory = (
-            factory_from_route_and_velocity_profile(
-                route=route,
+            factory_from_reference_path_and_velocity_profile(
+                reference_path=reference_path,
                 velocity_profile=self._spline_profile,
                 velocity_planning_problem=self._vpp,
             )

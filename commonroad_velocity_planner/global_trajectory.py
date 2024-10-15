@@ -2,12 +2,12 @@ from dataclasses import dataclass
 import logging
 
 import numpy as np
+from commonroad_route_planner.reference_path import ReferencePath
 from scipy.spatial import KDTree
 
 # commonroad
 from commonroad.scenario.lanelet import LaneletNetwork
 from commonroad.planning.planning_problem import InitialState
-from commonroad_route_planner.route import Route
 from commonroad_route_planner.route_sections.lanelet_section import LaneletSection
 from commonroad_route_planner.lane_changing.lane_change_methods.method_interface import (
     LaneChangeMethod,
@@ -28,7 +28,7 @@ from typing import List, Tuple
 class GlobalTrajectory:
     """
     Output class, containing the reference path, with velocity and acceleration profile as well as all information
-    of the CR route it was generated with.
+    of the CR reference_path it was generated with.
     """
 
     lanelet_network: LaneletNetwork
@@ -122,14 +122,14 @@ class GlobalTrajectory:
         return self.velocity_profile[idx_1]
 
 
-def factory_from_route_and_velocity_profile(
-    route: Route,
+def factory_from_reference_path_and_velocity_profile(
+    reference_path: ReferencePath,
     velocity_planning_problem: VelocityPlanningProblem,
     velocity_profile: SplineProfile,
 ) -> GlobalTrajectory:
     """
-    Factory method from cr route and velocity profile.
-    :param route:
+    Factory method from cr reference_path and velocity profile.
+    :param reference_path:
     :param velocity_planning_problem:
     :param velocity_profile:
     :return:
@@ -143,19 +143,19 @@ def factory_from_route_and_velocity_profile(
         velocity_planning_problem.sampled_goal_idx
     ]
     route_start_idx: int = project_point_on_ref_path(
-        reference_path=route.reference_path, point=vpp_start_point
+        reference_path=reference_path.reference_path, point=vpp_start_point
     )
     route_goal_idx: int = project_point_on_ref_path(
-        reference_path=route.reference_path, point=vpp_end_point
+        reference_path=reference_path.reference_path, point=vpp_end_point
     )
-    arclength_to_start: float = route.path_length_per_point[route_start_idx]
+    arclength_to_start: float = reference_path.path_length_per_point[route_start_idx]
 
     velocity_array: np.ndarray = velocity_profile.interpolate_velocity_at_arc_lenth(
-        route.path_length_per_point - arclength_to_start
+        reference_path.path_length_per_point - arclength_to_start
     )
     acceleration_array: np.ndarray = (
         velocity_profile.interpolate_acceleration_at_arc_lenth(
-            route.path_length_per_point - arclength_to_start
+            reference_path.path_length_per_point - arclength_to_start
         )
     )
 
@@ -178,21 +178,21 @@ def factory_from_route_and_velocity_profile(
     minimum_velocity: float = np.min(velocity_array)
 
     return GlobalTrajectory(
-        lanelet_network=route.lanelet_network,
-        initial_state=route.initial_state,
-        lanelet_ids=route.lanelet_ids,
-        sections=route.sections,
-        prohibited_lanelet_ids=route.prohibited_lanelet_ids,
-        lane_change_method=route.lane_change_method,
-        reference_path=route.reference_path,
-        num_lane_change_actions=route.num_lane_change_actions,
+        lanelet_network=reference_path.lanelet_network,
+        initial_state=reference_path.initial_state,
+        lanelet_ids=reference_path.lanelet_ids,
+        sections=reference_path.sections,
+        prohibited_lanelet_ids=reference_path.prohibited_lanelet_ids,
+        lane_change_method=reference_path.lane_change_method,
+        reference_path=reference_path.reference_path,
+        num_lane_change_actions=reference_path.num_lane_change_actions,
         velocity_profile=velocity_array,
         acceleration_profile=acceleration_array,
-        interpoint_distance=route.interpoint_distances,
-        path_length_per_point=route.path_length_per_point,
-        path_orientation=route.path_orientation,
-        path_curvature=route.path_curvature,
-        length_reference_path=route.length_reference_path,
+        interpoint_distance=reference_path.interpoint_distances,
+        path_length_per_point=reference_path.path_length_per_point,
+        path_orientation=reference_path.path_orientation,
+        path_curvature=reference_path.path_curvature,
+        length_reference_path=reference_path.length_reference_path,
         average_velocity=average_velocity,
         maximum_velocity=maximum_velocity,
         minimum_velocity=minimum_velocity,

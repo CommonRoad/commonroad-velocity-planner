@@ -113,7 +113,7 @@ def draw_route_state(
     point_radius: float = 0.1,
 ) -> None:
     """
-    Draws route state
+    Draws reference_path state
     :param renderer: cr MPRenderer
     :param reference_point: point to draw as (2,) np.ndarry
     :param velocity: velocity of point

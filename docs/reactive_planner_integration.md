@@ -3,15 +3,14 @@ This example shows how to integrate the velocity planner into the reactive plann
 in which there are sharp curves after longer straight parts with high velocity, as the reactive planner might not break early 
 enough.
 
-
-
 ```Python
 from copy import deepcopy
 from pathlib import Path
 import logging
 
 # commonroad
-from commonroad_route_planner.route_planner import RoutePlanner
+import commonroad_route_planner.fast_api.fast_api as rfapi
+from commonroad_route_planner.reference_path import ReferencePath
 from commonroad_rp.reactive_planner import ReactivePlanner
 from commonroad_rp.utility.visualization import visualize_planner_at_timestep
 from commonroad_rp.utility.evaluation import run_evaluation
@@ -23,8 +22,6 @@ from commonroad_velocity_planner.velocity_planner_interface import IVelocityPlan
 from commonroad_velocity_planner.configuration.configuration_builder import ConfigurationBuilder
 from commonroad_velocity_planner.velocity_planning_problem import VppBuilder
 
-
-
 path_scenario = Path(__file__).parents[1] / "scenarios" / YOUR_FILENAME
 path_config = Path(__file__).parents[0] / "artifacts" / "rp_config.yaml"
 
@@ -32,20 +29,21 @@ path_config = Path(__file__).parents[0] / "artifacts" / "rp_config.yaml"
 config = ReactivePlannerConfiguration.load(path_config, path_scenario)
 config.update()
 
-
 initialize_logger(config)
 logger = logging.getLogger("RP_LOGGER")
 logger.setLevel(logging.ERROR)
 
 # Route Planner
-route_planner = RoutePlanner(config.scenario.lanelet_network, config.planning_problem)
-route = route_planner.plan_routes().retrieve_first_route()
+reference_path = rfapi.generate_reference_path_from_scenario_and_planning_problem(
+    scenario=config.scenario,
+    planning_problem=config.planning_problem
+)
 # Velocity Planner
 global_trajectory = IVelocityPlanner().plan_velocity(
-    route=route,
+    reference_path=reference_path,
     planner_config=ConfigurationBuilder().get_predefined_configuration(),
     velocity_planning_problem=VppBuilder().build_vpp(
-        route=route,
+        reference_path=reference_path,
         planning_problem=config.planning_problem,
         default_goal_velocity=config.planning_problem.initial_state.velocity
     )
@@ -121,7 +119,7 @@ while not planner.goal_reached():
                       initial_state_curv=(optimal[2][1 + temp], optimal[3][1 + temp]),
                       collision_checker=planner.collision_checker, coordinate_system=planner.coordinate_system)
 
-    #print(f"current time step: {current_count}")
+    # print(f"current time step: {current_count}")
 
     # visualize the current time step of the simulation
     if config.debug.show_plots or config.debug.save_plots:
