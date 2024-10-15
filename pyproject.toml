@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "commonroad-velocity-planner"
-version = "0.0.1"
+version = "0.1.1"
 description = "CommonRoad Velocity Planner Toolbox"
 authors = ["Tobias Mascetta <tobias.mascetta@tum.de>", "Kilian Northoff <kilian.northoff@tum.de"]
 license = "BSD"
@@ -19,7 +19,7 @@ packages = [{include = "commonroad_velocity_planner"}]
 [tool.poetry.dependencies]
 python = ">=3.9,<3.12"
 commonroad-io = ">=2022.2"
-commonroad-route-planner = ">=2024.1"
+commonroad-route-planner = "^2025.0.1"
 numpy = ">=1.17.4,<2.0"
 cvxpy = "^1.4"
 matplotlib = "<3.9"
@@ -32,7 +32,7 @@ optional = true
 
 [tool.poetry.group.test.dependencies]
 coverage = "^6.5.0"
-commonroad-reactive-planner = ">=2024.1"
+commonroad-reactive-planner = "^2024.1"
 
 # docs
 [tool.poetry.group.docs]

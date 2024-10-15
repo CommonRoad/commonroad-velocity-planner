@@ -45,7 +45,7 @@ class BaseVelocityPlanner(ABC):
     ) -> GlobalTrajectory:
         """
         plan velocity profile
-        :param route: cr route object
+        :param reference_path: cr reference_path object
         :return: cr global trajectory object
         """
         pass

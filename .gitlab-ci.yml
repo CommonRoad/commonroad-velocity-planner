@@ -21,7 +21,6 @@ unittest:
   script:
     - coverage run --source=./commonroad_velocity_planner -m unittest discover tests
     - coverage report -m || true
-    - coverage xml
   coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
   artifacts:
     reports:

@@ -2,11 +2,8 @@
 from commonroad.planning.planning_problem import PlanningProblem
 from commonroad.scenario.lanelet import LaneletNetwork
 from commonroad.scenario.scenario import Scenario
-from commonroad_route_planner.route_planner import (
-    RoutePlanner,
-    RouteGenerator,
-)
-from commonroad_route_planner.route import Route
+import commonroad_route_planner.fast_api.fast_api as fapi
+from commonroad_route_planner.reference_path import ReferencePath
 
 # own code base
 from commonroad_velocity_planner.global_trajectory import GlobalTrajectory
@@ -37,12 +34,6 @@ def global_trajectory_from_scenario_and_planning_problem(
     :param planning_problem: CommonRoad planning problem
     :return: CommonRoad global trajectory
     """
-    # route planner
-    route_planner = RoutePlanner(
-        lanelet_network=scenario.lanelet_network,
-        planning_problem=planning_problem
-    )
-
     return global_trajectory_from_lanelet_network_and_planning_problem(
         lanelet_network=scenario.lanelet_network, planning_problem=planning_problem
     )
@@ -58,14 +49,13 @@ def global_trajectory_from_lanelet_network_and_planning_problem(
     :param planning_problem: CommonRoad planning problem
     :return: CommonRoad global trajectory
     """
-
-    # route planner
-    route_planner = RoutePlanner(
-        lanelet_network=lanelet_network,
-        planning_problem=planning_problem,
+    # ========== retrieving reference path =========== #
+    # here we retrieve the shortest reference_path that has the least amount of disjoint lane changes
+    reference_path: "ReferencePath" = (
+        fapi.generate_reference_path_from_lanelet_network_and_planning_problem(
+            lanelet_network=lanelet_network, planning_problem=planning_problem
+        )
     )
-    route_generator: RouteGenerator = route_planner.plan_routes()
-    route: Route = route_generator.retrieve_shortest_route()
 
     # Velocity Planner config
     velocity_planner_config: (
@@ -76,7 +66,7 @@ def global_trajectory_from_lanelet_network_and_planning_problem(
 
     # velocity planning problem
     vpp: VelocityPlanningProblem = VppBuilder().build_vpp(
-        route=route,
+        reference_path=reference_path,
         planning_problem=planning_problem,
         resampling_distance=2.0,
         default_goal_velocity=planning_problem.initial_state.velocity,
@@ -87,7 +77,43 @@ def global_trajectory_from_lanelet_network_and_planning_problem(
     vpi = IVelocityPlanner()
 
     return vpi.plan_velocity(
-        route=route,
+        reference_path=reference_path,
+        planner_config=velocity_planner_config,
+        velocity_planning_problem=vpp,
+    )
+
+
+def global_trajectory_from_cr_reference_path_and_planning_problem(
+    cr_reference_path: ReferencePath, planning_problem: PlanningProblem
+) -> GlobalTrajectory:
+    """
+    Get global trajectory from CommonRoad reference path and planning problem
+    :param cr_reference_path: CommonRoad reference path object
+    :param planning_problem: CommonRoad planning problem
+    :return: CommonRoad global trajectory
+    """
+
+    # Velocity Planner config
+    velocity_planner_config: (
+        VelocityPlannerConfig
+    ) = ConfigurationBuilder().get_predefined_configuration(
+        planner_config=PlannerConfig.DEFAULT,
+    )
+
+    # velocity planning problem
+    vpp: VelocityPlanningProblem = VppBuilder().build_vpp(
+        reference_path=cr_reference_path,
+        planning_problem=planning_problem,
+        resampling_distance=2.0,
+        default_goal_velocity=planning_problem.initial_state.velocity,
+        smoothing_strategy=SmoothingStrategy.ELASTIC_BAND,
+    )
+
+    # Velocity Planner
+    vpi = IVelocityPlanner()
+
+    return vpi.plan_velocity(
+        reference_path=cr_reference_path,
         planner_config=velocity_planner_config,
         velocity_planning_problem=vpp,
     )

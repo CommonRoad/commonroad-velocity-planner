@@ -1,6 +1,7 @@
-The subsequent code snippet shows the general usage of the CommonRoad Velocity Planner
+from commonroad_route_planner.reference_path import ReferencePathThe subsequent code snippet shows the general usage of the CommonRoad Velocity Planner
 
 ## Default Configuration
+
 ```Python
 from commonroad.common.file_reader import CommonRoadFileReader
 from commonroad_route_planner.route_planner import RoutePlanner
@@ -12,12 +13,11 @@ from commonroad_velocity_planner.configuration.optimization_config import Optimi
 from commonroad_velocity_planner.configuration.vehicle_config import VehicleConfig
 from commonroad_velocity_planner.configuration.velocity_planner_config import VelocityPlannerConfig
 
-
 # cr-io
 scenario, planning_problem_set = CommonRoadFileReader("path/to/commonroad/xml").open()
 planning_problem = list(planning_problem_set.planning_problem_dict.values())[0]
 
-# route planner
+# reference_path planner
 route: Route = RoutePlanner(
     lanelet_network=scenario.lanelet_network, planning_problem=planning_problem
 ).plan_routes().retrieve_shortest_route()
@@ -36,10 +36,10 @@ velocity_planner_config: VelocityPlannerConfig = ConfigurationBuilder.build_defa
 )
 
 global_trajectory = IVelocityPlanner().plan_velocity(
-    route=route,
-    planner_config= velocity_planner_config,
+    reference_path=route,
+    planner_config=velocity_planner_config,
     velocity_planning_problem=VppBuilder().build_vpp(
-        route=route,
+        reference_path=route,
         planning_problem=planning_problem,
         default_goal_velocity=planning_problem.initial_state.velocity,
     )
@@ -47,10 +47,11 @@ global_trajectory = IVelocityPlanner().plan_velocity(
 ```
 
 ## Custom Configurations
+
 ```Python
 from commonroad.common.file_reader import CommonRoadFileReader
-from commonroad_route_planner.route_planner import RoutePlanner
-from commonroad_route_planner.route import Route
+import commonroad_route_planner.fast_api.fast_api as rfapi
+from commonroad_route_planner.reference_path import ReferencePath
 from commonroad_velocity_planner.velocity_planner_interface import IVelocityPlanner
 from commonroad_velocity_planner.configuration.configuration_builder import ConfigurationBuilder
 from commonroad_velocity_planner.configuration.vehicle_config import VehicleConfig
@@ -64,15 +65,16 @@ from commonroad_velocity_planner.configuration.optimization_config import (
     JerkMinType,
     SolverBackend,
 )
+
 # cr-io
 scenario, planning_problem_set = CommonRoadFileReader("path/to/scenario").open()
 planning_problem = list(planning_problem_set.planning_problem_dict.values())[0]
 
-# route planner
-route: Route = RoutePlanner(
-    lanelet_network=scenario.lanelet_network, planning_problem=planning_problem
-).plan_routes().retrieve_shortest_route()
-
+# reference_path planner
+reference_path: ReferencePath = rfapi.generate_reference_path_from_scenario_and_planning_problem(
+    scenario=scenario,
+    planning_problem=planning_problem
+)
 
 ###### Custom Configuration Building #######
 # You can also specify custom configs
@@ -118,10 +120,10 @@ velocity_planner_config: VelocityPlannerConfig = ConfigurationBuilder.build_velo
 )
 
 global_trajectory = IVelocityPlanner().plan_velocity(
-    route=route,
-    planner_config= velocity_planner_config,
+    reference_path=reference_path,
+    planner_config=velocity_planner_config,
     velocity_planning_problem=VppBuilder().build_vpp(
-        route=route,
+        reference_path=reference_path,
         planning_problem=planning_problem,
         default_goal_velocity=planning_problem.initial_state.velocity,
     )
