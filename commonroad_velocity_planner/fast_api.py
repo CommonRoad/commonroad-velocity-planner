@@ -51,9 +51,10 @@ def global_trajectory_from_lanelet_network_and_planning_problem(
     """
     # ========== retrieving reference path =========== #
     # here we retrieve the shortest reference_path that has the least amount of disjoint lane changes
-    reference_path: "ReferencePath" = fapi.generate_reference_path_from_lanelet_network_and_planning_problem(
-        lanelet_network=lanelet_network,
-        planning_problem=planning_problem
+    reference_path: "ReferencePath" = (
+        fapi.generate_reference_path_from_lanelet_network_and_planning_problem(
+            lanelet_network=lanelet_network, planning_problem=planning_problem
+        )
     )
 
     # Velocity Planner config
@@ -83,8 +84,7 @@ def global_trajectory_from_lanelet_network_and_planning_problem(
 
 
 def global_trajectory_from_cr_reference_path_and_planning_problem(
-        cr_reference_path: ReferencePath,
-        planning_problem: PlanningProblem
+    cr_reference_path: ReferencePath, planning_problem: PlanningProblem
 ) -> GlobalTrajectory:
     """
     Get global trajectory from CommonRoad reference path and planning problem

@@ -127,7 +127,10 @@ class VppBuilder:
             interpoint_distance = resampling_distance
 
         start_index = np.argmin(
-            np.linalg.norm(reference_path.reference_path - reference_path.initial_state.position, axis=1)
+            np.linalg.norm(
+                reference_path.reference_path - reference_path.initial_state.position,
+                axis=1,
+            )
         )
 
         # get start and stop index of initial reference path
