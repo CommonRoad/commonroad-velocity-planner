@@ -4,10 +4,10 @@ from commonroad_route_planner.reference_path import ReferencePath
 The fast API allows users with only a few lines of code to generate the global trajectory from a scenario and a planning
 problem. 
 
-<<<<<<< HEAD
+
 =======
 ### Example 1: From scenario and planning problem
->>>>>>> develop
+
 
 ```Python
 from commonroad.common.file_reader import CommonRoadFileReader
