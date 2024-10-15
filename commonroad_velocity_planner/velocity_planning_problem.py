@@ -5,7 +5,7 @@ import numpy as np
 from scipy.interpolate import CubicSpline
 
 # commonroad
-from commonroad_route_planner.route import Route
+from commonroad_route_planner.reference_path import ReferencePath
 from commonroad_route_planner.utility.polyline_operations.polyline_operations import (
     compute_scalar_curvature_from_polyline,
 )
@@ -101,7 +101,7 @@ class VppBuilder:
 
     @staticmethod
     def build_vpp(
-        route: Route,
+        reference_path: ReferencePath,
         planning_problem: PlanningProblem,
         resampling_distance: float = 2,
         smoothing_strategy: SmoothingStrategy = SmoothingStrategy.ELASTIC_BAND,
@@ -112,7 +112,7 @@ class VppBuilder:
     ) -> VelocityPlanningProblem:
         """
         Build velocity planning problem by downsampling and smoothing the reference path first
-        :param route: cr route object
+        :param reference_path: cr reference_path object
         :param planning_problem: cr planning problem
         :param resampling_distance: resampling distance
         :param planning_horizon: planning horizon
@@ -122,22 +122,22 @@ class VppBuilder:
         :return: velocity planning problem object
         """
         if resampling_distance is None:
-            interpoint_distance = route.average_interpoint_distance
+            interpoint_distance = reference_path.average_interpoint_distance
         else:
             interpoint_distance = resampling_distance
 
         start_index = np.argmin(
-            np.linalg.norm(route.reference_path - route.initial_state.position, axis=1)
+            np.linalg.norm(reference_path.reference_path - reference_path.initial_state.position, axis=1)
         )
 
         # get start and stop index of initial reference path
-        start_distance = route.path_length_per_point[start_index]
-        stop_distance = route.length_reference_path
+        start_distance = reference_path.path_length_per_point[start_index]
+        stop_distance = reference_path.length_reference_path
 
         # resample before smoothing
         resampled_reference_path, path_length_per_point = (
             cubic_spline_arc_interpolation_2D(
-                polyline=route.reference_path,
+                polyline=reference_path.reference_path,
                 start_distance=start_distance,
                 stop_distance=stop_distance,
                 resampling_distance=resampling_distance,
@@ -166,7 +166,7 @@ class VppBuilder:
 
         # get speed limits
         speed_limits = get_speed_limits_from_lanelet_network(
-            resampled_reference_path, route.lanelet_network
+            resampled_reference_path, reference_path.lanelet_network
         )
         initial_idx = project_initial_state_on_ref_path(
             resampled_reference_path, planning_problem.initial_state
@@ -201,12 +201,12 @@ class VppBuilder:
             path_length_per_point=path_length_per_point,
             path_curvature=path_curvature,
             speed_limits=speed_limits,
-            v_initial=route.initial_state.velocity,
+            v_initial=reference_path.initial_state.velocity,
             v_stop=get_goal_velocity(
                 goal_region=planning_problem.goal,
                 default_velocity=default_goal_velocity,
             ),
-            a_initial=route.initial_state.acceleration,
+            a_initial=reference_path.initial_state.acceleration,
             a_stop=get_goal_acceleration(
                 goal_region=planning_problem.goal,
                 default_acceleration=default_goal_acceleration,

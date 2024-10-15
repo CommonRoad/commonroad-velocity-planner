@@ -2,8 +2,9 @@ import unittest
 from pathlib import Path
 
 from commonroad.common.file_reader import CommonRoadFileReader
-from commonroad_route_planner.route_planner import RoutePlanner
-from commonroad_route_planner.route import Route
+import commonroad_route_planner.fast_api.fast_api as fapi
+from commonroad_route_planner.reference_path import ReferencePath
+
 from commonroad_velocity_planner.velocity_planner_interface import IVelocityPlanner
 from commonroad_velocity_planner.configuration.configuration_builder import ConfigurationBuilder
 from commonroad_velocity_planner.configuration.vehicle_config import VehicleConfig
@@ -28,10 +29,11 @@ class TestConfigBuilding(unittest.TestCase):
         scenario, planning_problem_set = CommonRoadFileReader(path_scenario).open()
         planning_problem = list(planning_problem_set.planning_problem_dict.values())[0]
 
-        # route planner
-        route: Route = RoutePlanner(
-            lanelet_network=scenario.lanelet_network, planning_problem=planning_problem
-        ).plan_routes().retrieve_shortest_route()
+        # reference_path planner
+        reference_path: ReferencePath = fapi.generate_reference_path_from_scenario_and_planning_problem(
+            scenario=scenario,
+            planning_problem=planning_problem
+        )
 
 
         ###### Configuration Building #######
@@ -48,10 +50,10 @@ class TestConfigBuilding(unittest.TestCase):
         )
 
         global_trajectory = IVelocityPlanner().plan_velocity(
-            route=route,
+            reference_path=reference_path,
             planner_config= velocity_planner_config,
             velocity_planning_problem=VppBuilder().build_vpp(
-                route=route,
+                reference_path=reference_path,
                 planning_problem=planning_problem,
                 default_goal_velocity=planning_problem.initial_state.velocity,
             )
@@ -65,10 +67,12 @@ class TestConfigBuilding(unittest.TestCase):
         scenario, planning_problem_set = CommonRoadFileReader(path_scenario).open()
         planning_problem = list(planning_problem_set.planning_problem_dict.values())[0]
 
-        # route planner
-        route: Route = RoutePlanner(
-            lanelet_network=scenario.lanelet_network, planning_problem=planning_problem
-        ).plan_routes().retrieve_shortest_route()
+        # reference_path planner
+        reference_path: ReferencePath = fapi.generate_reference_path_from_scenario_and_planning_problem(
+            scenario=scenario,
+            planning_problem=planning_problem
+        )
+
 
 
         ###### Custom Configuration Building #######
@@ -115,10 +119,10 @@ class TestConfigBuilding(unittest.TestCase):
         )
 
         global_trajectory = IVelocityPlanner().plan_velocity(
-            route=route,
+            reference_path=reference_path,
             planner_config= velocity_planner_config,
             velocity_planning_problem=VppBuilder().build_vpp(
-                route=route,
+                reference_path=reference_path,
                 planning_problem=planning_problem,
                 default_goal_velocity=planning_problem.initial_state.velocity,
             )

@@ -19,7 +19,7 @@ packages = [{include = "commonroad_velocity_planner"}]
 [tool.poetry.dependencies]
 python = ">=3.9,<3.12"
 commonroad-io = ">=2022.2"
-commonroad-route-planner = ">=2024.1"
+commonroad-route-planner = ">=2025.0.1"
 numpy = ">=1.17.4,<2.0"
 cvxpy = "^1.4"
 matplotlib = "<3.9"
