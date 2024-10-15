@@ -1,15 +1,12 @@
+import sys
 import time
 from pathlib import Path
 import os
 
 # commonroad
 from commonroad.common.file_reader import CommonRoadFileReader
-from commonroad_route_planner.route_planner import (
-    RoutePlanner,
-    RouteGenerator,
-)
-from commonroad_route_planner.route import Route
-
+import commonroad_route_planner.fast_api.fast_api as fapi
+from commonroad_route_planner.reference_path import ReferencePath
 
 # own code base
 from commonroad_velocity_planner.utils.visualization.visualize_velocity_planner import visualize_global_trajectory
@@ -29,20 +26,18 @@ def main(
     output_dir_path: str,
     test: bool = False,
     save_img: bool = False,
-    planner: ImplementedPlanners = ImplementedPlanners.LinearProgramPlanner,
+    planner: ImplementedPlanners = ImplementedPlanners.BangBangSTPlanner,
 ) -> None:
 
     # cr-io
     scenario, planning_problem_set = CommonRoadFileReader(path_to_xml).open()
     planning_problem = list(planning_problem_set.planning_problem_dict.values())[0]
 
-    # route planner
-    route_planner = RoutePlanner(
-        lanelet_network=scenario.lanelet_network,
-        planning_problem=planning_problem,
+    # reference_path planner
+    reference_path: ReferencePath = fapi.generate_reference_path_from_scenario_and_planning_problem(
+        scenario=scenario,
+        planning_problem=planning_problem
     )
-    route_generator: RouteGenerator = route_planner.plan_routes()
-    route: Route = route_generator.retrieve_shortest_route()
 
     t_0 = time.perf_counter()
     # Velocity Planner config
@@ -52,7 +47,7 @@ def main(
 
     # velocity planning problem
     vpp: VelocityPlanningProblem = VppBuilder().build_vpp(
-        route=route,
+        reference_path=reference_path,
         planning_problem=planning_problem,
         resampling_distance=2.0,
         default_goal_velocity=planning_problem.initial_state.velocity,
@@ -62,7 +57,7 @@ def main(
     # Velocity Planner
     vpi = IVelocityPlanner()
     global_trajectory, spline_profile = vpi.plan_velocity(
-        route=route,
+        reference_path=reference_path,
         planner_config=velocity_planner_config,
         velocity_planning_problem=vpp,
         velocity_planner=planner,
@@ -109,12 +104,17 @@ def main(
 if __name__ == "__main__":
     scenarios = "/home/tmasc/projects/velocity_planner/commonroad-velocity-planner/scenarios"
     output_dir_path: str = "/home/tmasc/projects/velocity_planner/commonroad-velocity-planner/output"
+    xml = scenarios + "/" +"ZAM_handling1-1_1_T-1.xml"
+    main(path_to_xml=xml, save_img=False, test=False, output_dir_path=output_dir_path)
+
+
+    sys.exit()
     for xml in sorted(os.listdir(scenarios)):
         _xml = scenarios + "/" + xml
         main(path_to_xml=_xml, save_img=True, test=False, output_dir_path=output_dir_path)
 
     def test_cr_challenge():
-        cr_challenge = "/home/tmasc/projects/route_planner/commonroad-route-planner/tutorial/commonroad_challenge_2023"
+        cr_challenge = "/home/tmasc/projects/route_planner/commonroad-reference_path-planner/tutorial/commonroad_challenge_2023"
         failed = 0
         for xml in sorted(os.listdir(cr_challenge)):
             _xml = cr_challenge + "/" + xml
