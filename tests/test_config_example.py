@@ -90,6 +90,8 @@ class TestConfigBuilding(unittest.TestCase):
             approximated_jerk_over_weight=5 * 10e5,
             pseudo_jerk_constraint=ConstraintType.SOFT_QUADRATIC,
             pseudo_jerk_over_weight=5 * 10e5,
+            smoothness_weight=30,
+            time_weight=30,
             solver=SolverBackend.CLARABEL,
         )
 
@@ -98,6 +100,7 @@ class TestConfigBuilding(unittest.TestCase):
             length_front=1.484,
             mass=2520,
             inertia_z=13600,
+            tire_linear=0.3,
             tire_B_front=10,
             tire_C_front=1.3,
             tire_D_front=1.2,
@@ -110,6 +113,7 @@ class TestConfigBuilding(unittest.TestCase):
             optimization_config=optimization_config,
             vehicle_config=vehicle_config,
             a_lateral_max=2.0,
+            a_long_comfort=0.9,
             a_min=-2.5,
             a_max=1.5,
             j_min=-4.0,

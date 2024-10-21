@@ -45,4 +45,18 @@ global_trajectory_bb = IVelocityPlanner().plan_velocity(
     )
 )
 
+
+# Using QP Planner
+global_trajectory_qp = IVelocityPlanner().plan_velocity(
+    velocity_planner=ImplementedPlanners.QPPlanner,
+    reference_path=reference_path,
+    planner_config=ConfigurationBuilder().get_predefined_configuration(),
+    velocity_planning_problem=VppBuilder().build_vpp(
+        reference_path=reference_path,
+        planning_problem=planning_problem,
+        default_goal_velocity=planning_problem.initial_state.velocity,
+    )
+)
+
+
 ```

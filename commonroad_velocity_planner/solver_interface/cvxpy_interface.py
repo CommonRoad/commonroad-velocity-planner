@@ -19,6 +19,7 @@ from commonroad_velocity_planner.spline_profile import SplineProfile
 from commonroad_velocity_planner.velocity_planning_problem import (
     VelocityPlanningProblem,
 )
+from commonroad_velocity_planner.utils.exceptions import ConfigException
 
 # TODO: Make much prettier
 # TODO: Deconvolute interface
@@ -73,7 +74,7 @@ class CvxpyInterface:
         config: VelocityPlannerConfig,
         velocity_planning_problem: VelocityPlanningProblem,
         v_max: np.ndarray,
-        v_approx: np.ndarray,
+        v_approx: np.ndarray = None,
     ) -> None:
         """
         Updates planning problem
@@ -83,6 +84,13 @@ class CvxpyInterface:
         :param v_approx:
         :return:
         """
+        self._sanity_check(
+            config=config,
+            velocity_planning_problem=velocity_planning_problem,
+            v_max=v_max,
+            v_approx=v_approx,
+        )
+
         self._config = config
         self._problem = velocity_planning_problem
 
@@ -94,7 +102,7 @@ class CvxpyInterface:
         self._a = cp.Variable(self._n)
 
         self._v_max = v_max
-        self._v_approx = v_approx
+        self._v_approx = v_approx if v_approx is None else v_max
 
     def add_velocity_to_objective(self) -> None:
         """
@@ -140,6 +148,32 @@ class CvxpyInterface:
                     * ((self._a[i + 1] - self._a[i]) * approx_vel / ds) ** 2
                     * ds
                 )
+
+    def add_time_efficiency_objective(self) -> None:
+        """
+        Adds time efficiency to objective according to Zhang et al. Eq. 27
+        """
+        ds = self._problem.interpoint_distance
+        for i in range(self._n - 1):
+            # see Zhang et al. Eq. 27
+            self._objective = (
+                self._config.optimization_config.time_weight
+                * 2
+                * ds
+                * cp.inv_pos(cp.sqrt(self._b[i]) + cp.sqrt(self._b[i + 1]))
+            )
+
+    def add_smoothness_to_objective(self) -> None:
+        """
+        Adds smoothness to objective according to Zhang et al Eq. 28
+        """
+        ds = self._problem.interpoint_distance
+        for i in range(self._n - 1):
+            self._objective += (
+                self._config.optimization_config.smoothness_weight
+                * ds
+                * cp.norm2((self._a[i + 1] - self._a[i]) / ds) ** 2
+            )
 
     def add_dynamic_constraint(self) -> None:
         """
@@ -222,9 +256,9 @@ class CvxpyInterface:
                 ]
             )
 
-    def add_acceleration_constraint(self) -> None:
+    def add_longitudinal_acceleration_constraint(self) -> None:
         """
-        Add acceleration constraints as specified in config
+        Add longitudinal acceleration constraints as specified in config
         """
         if (
             self._config.optimization_config.acceleration_constraint
@@ -249,6 +283,43 @@ class CvxpyInterface:
                 ]
                 + [
                     self._a[i] - acc_slack_var[i] <= self._config.a_max
+                    for i in range(1, self._n - 1)
+                ]
+            )
+
+    def add_longitudinal_comfort_acceleration_constraint(self) -> None:
+        """
+        Add longitudinal comfort acceleration constraints as specified in config
+        """
+        if (
+            self._config.optimization_config.acceleration_constraint
+            == ConstraintType.HARD
+        ):
+            self._constraints.extend(
+                [
+                    self._config.a_long_comfort <= self._a[i]
+                    for i in range(1, self._n - 1)
+                ]
+                + [
+                    self._a[i] <= self._config.a_long_comfort
+                    for i in range(1, self._n - 1)
+                ]
+            )
+        elif self._config.optimization_config.acceleration_constraint in [
+            ConstraintType.SOFT_LINEAR,
+            ConstraintType.SOFT_QUADRATIC,
+        ]:
+            acc_slack_var = self.add_slack_var(
+                self._config.optimization_config.acceleration_constraint,
+                self._config.optimization_config.acceleration_over_weight,
+            )
+            self._constraints.extend(
+                [
+                    self._config.a_long_comfort <= self._a[i] - acc_slack_var[i]
+                    for i in range(1, self._n - 1)
+                ]
+                + [
+                    self._a[i] - acc_slack_var[i] <= self._config.a_long_comfort
                     for i in range(1, self._n - 1)
                 ]
             )
@@ -481,3 +552,25 @@ class CvxpyInterface:
             acceleration_profile=self._a.value,
             goal_velocity=self._problem.v_stop,
         )
+
+    def _sanity_check(
+        self,
+        config: VelocityPlannerConfig,
+        velocity_planning_problem: VelocityPlanningProblem,
+        v_max: np.ndarray,
+        v_approx: np.ndarray = None,
+    ) -> None:
+        """
+        Sanity check if config and input make sense
+        """
+        if (
+            config.optimization_config.jerk_minimization_type
+            == JerkMinType.APPROXIMATED_JERK
+            and v_approx is None
+        ):
+            self._logger.error(
+                "Config has JerkMinType.Approximated_Jerk but v_approx is not set"
+            )
+            raise ConfigException(
+                "Config has JerkMinType.Approximated_Jerk but v_approx is not set"
+            )
