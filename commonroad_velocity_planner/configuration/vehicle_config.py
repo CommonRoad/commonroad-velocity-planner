@@ -13,6 +13,7 @@ class VehicleConfig:
     inertia_z: float
 
     # Tire model
+    tire_linear: float
     tire_B_front: float
     tire_C_front: float
     tire_D_front: float
