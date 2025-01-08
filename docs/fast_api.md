@@ -1,9 +1,15 @@
+from commonroad_route_planner.reference_path import ReferencePath
+
 ## Fast Api
 The fast API allows users with only a few lines of code to generate the global trajectory from a scenario and a planning
 problem. 
 
 
+<<<<<<< HEAD
+=======
+=======
 
+>>>>>>> develop
 ### Example 1: From scenario and planning problem
 
 

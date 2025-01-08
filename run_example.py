@@ -27,7 +27,7 @@ def main(
     output_dir_path: str,
     test: bool = False,
     save_img: bool = False,
-    planner: ImplementedPlanners = ImplementedPlanners.LinearProgramPlanner,
+    planner: ImplementedPlanners = ImplementedPlanners.BangBangSTPlanner,
 ) -> None:
 
     # cr-io
@@ -105,6 +105,11 @@ def main(
 if __name__ == "__main__":
     scenarios = "/home/tmasc/projects/velocity_planner/commonroad-velocity-planner/scenarios"
     output_dir_path: str = "/home/tmasc/projects/velocity_planner/commonroad-velocity-planner/output"
+    xml = scenarios + "/" +"ZAM_handling1-1_1_T-1.xml"
+    main(path_to_xml=xml, save_img=False, test=False, output_dir_path=output_dir_path)
+
+
+    sys.exit()
     for xml in sorted(os.listdir(scenarios)):
         _xml = scenarios + "/" + xml
         main(path_to_xml=_xml, save_img=True, test=False, output_dir_path=output_dir_path)
