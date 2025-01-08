@@ -5,7 +5,11 @@ The fast API allows users with only a few lines of code to generate the global t
 problem. 
 
 
+<<<<<<< HEAD
 =======
+=======
+
+>>>>>>> develop
 ### Example 1: From scenario and planning problem
 
 

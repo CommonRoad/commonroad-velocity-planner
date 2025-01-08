@@ -54,6 +54,7 @@ class ConfigurationBuilder:
         a_min: float,
         a_max: float,
         a_lateral_max: float,
+        a_long_comfort: float,
         j_min: float,
         j_max: float,
         v_min_driving: float,
@@ -78,6 +79,7 @@ class ConfigurationBuilder:
             a_min=a_min,
             a_max=a_max,
             a_lateral_max=a_lateral_max,
+            a_long_comfort=a_long_comfort,
             j_min=j_min,
             j_max=j_max,
             v_min_driving=v_min_driving,
@@ -90,6 +92,7 @@ class ConfigurationBuilder:
         length_rear: float,
         length_front: float,
         inertia_z: float,
+        tire_linear: float,
         tire_B_front: float,
         tire_C_front: float,
         tire_D_front: float,
@@ -103,6 +106,7 @@ class ConfigurationBuilder:
         :param length_rear: length from cg to rear
         :param length_front: length from cg to front
         :param inertia_z: inertia z
+        :param tire_linear: linear tire model coefficient
         :param tire_B_front: pajecka B parameter for front tire
         :param tire_C_front: pajecka C parameter for front tire
         :param tire_D_front: pajecka D parameter for front tire
@@ -116,6 +120,7 @@ class ConfigurationBuilder:
             length_rear=length_rear,
             length_front=length_front,
             inertia_z=inertia_z,
+            tire_linear=tire_linear,
             tire_B_front=tire_B_front,
             tire_C_front=tire_C_front,
             tire_D_front=tire_D_front,
@@ -138,6 +143,8 @@ class ConfigurationBuilder:
         approximated_jerk_over_weight: float,
         pseudo_jerk_constraint: Optional[ConstraintType],
         pseudo_jerk_over_weight: float,
+        time_weight: float,
+        smoothness_weight: float,
         solver: SolverBackend,
     ) -> OptimizationConfig:
         """
@@ -155,6 +162,8 @@ class ConfigurationBuilder:
         :param pseudo_jerk_constraint: constraint type for pseudo jerk
         :param pseudo_jerk_over_weight: pseudo jerk weight
         :param solver: cvxpy solver
+        :param time_weight: weight for time constraint
+        :param smoothness_weight: weight for smoothness
         :return: optimization config object
         """
         return OptimizationConfig(
@@ -171,6 +180,8 @@ class ConfigurationBuilder:
             pseudo_jerk_constraint=pseudo_jerk_constraint,
             pseudo_jerk_over_weight=pseudo_jerk_over_weight,
             solver=solver,
+            time_weight=time_weight,
+            smoothness_weight=smoothness_weight,
         )
 
     @staticmethod
@@ -192,6 +203,8 @@ class ConfigurationBuilder:
             approximated_jerk_over_weight=5 * 10e5,
             pseudo_jerk_constraint=ConstraintType.SOFT_QUADRATIC,
             pseudo_jerk_over_weight=5 * 10e5,
+            time_weight=30,
+            smoothness_weight=30,
             solver=SolverBackend.CLARABEL,
         )
 
@@ -206,6 +219,7 @@ class ConfigurationBuilder:
             length_front=1.484,
             mass=2520,
             inertia_z=13600,
+            tire_linear=0.3,
             tire_B_front=10,
             tire_C_front=1.3,
             tire_D_front=1.2,
@@ -228,6 +242,7 @@ class ConfigurationBuilder:
             optimization_config=optimization_config,
             vehicle_config=vehicle_config,
             a_lateral_max=2.0,
+            a_long_comfort=0.9,
             a_min=-2.5,
             a_max=1.5,
             j_min=-4.0,

@@ -1,8 +1,8 @@
-[tool.poetry]
+[project]
 name = "commonroad-velocity-planner"
 version = "0.1.1"
 description = "CommonRoad Velocity Planner Toolbox"
-authors = ["Tobias Mascetta <tobias.mascetta@tum.de>", "Kilian Northoff <kilian.northoff@tum.de"]
+authors = [{name = "Tobias Mascetta", email = "<tobias.mascetta@tum.de>"} , {name = "Kilian Northoff", email= "<kilian.northoff@tum.de"}]
 license = "BSD"
 readme = "README.md"
 keywords= ["autonomous", "automated", "vehicles", "driving", "motion", "planning", "velocity"]
@@ -11,6 +11,10 @@ classifiers = [
     "License :: OSI Approved :: BSD License",
     "Operating System :: POSIX :: Linux",
 ]
+
+requires-python = "^3.9"
+dynamic = ["dependencies"]
+
 
 packages = [{include = "commonroad_velocity_planner"}]
 
@@ -31,7 +35,7 @@ matplotlib = "<3.9"
 optional = true
 
 [tool.poetry.group.test.dependencies]
-coverage = "^6.5.0"
+coverage = {version = "^7.1.0", extras = ["toml"] }
 commonroad-reactive-planner = "^2024.1"
 
 # docs

@@ -66,4 +66,6 @@ class OptimizationConfig:
     approximated_jerk_over_weight: float
     pseudo_jerk_constraint: Optional[ConstraintType]
     pseudo_jerk_over_weight: float
+    time_weight: float
+    smoothness_weight: float
     solver: SolverBackend

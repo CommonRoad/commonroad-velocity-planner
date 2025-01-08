@@ -8,6 +8,7 @@ from commonroad.common.file_reader import CommonRoadFileReader
 import commonroad_route_planner.fast_api.fast_api as fapi
 from commonroad_route_planner.reference_path import ReferencePath
 
+from commonroad_velocity_planner.configuration.optimization_config import JerkMinType
 # own code base
 from commonroad_velocity_planner.utils.visualization.visualize_velocity_planner import visualize_global_trajectory
 from commonroad_velocity_planner.utils.visualization.visualize_quantities import (

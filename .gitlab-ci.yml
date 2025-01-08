@@ -12,6 +12,7 @@ stages:
 before_script:
   - pip install poetry
   - poetry config virtualenvs.in-project true
+  - poetry update
   - poetry install --with test,docs
   - source .venv/bin/activate
 
@@ -53,6 +54,7 @@ flake8:
   script:
     - pip install flake8
     - flake8 commonroad_velocity_planner/ --extend-ignore=E501,E203 --max-line-length=120
+
 
 black:
   stage: style

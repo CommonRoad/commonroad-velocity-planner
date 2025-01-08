@@ -20,6 +20,7 @@ from commonroad_velocity_planner.velocity_planning_problem import (
     VelocityPlanningProblem,
 )
 from commonroad_velocity_planner.planner.bang_bang_planner import BangBangSTPlanner
+from commonroad_velocity_planner.planner.qp_optimization_planner import QPPlanner
 
 
 # typing
@@ -30,6 +31,7 @@ from typing import Tuple, Union
 class ImplementedPlanners(enum.Enum):
     LinearProgramPlanner = 0
     BangBangSTPlanner = 1
+    QPPlanner = 2
 
 
 class IVelocityPlanner:
@@ -91,11 +93,9 @@ class IVelocityPlanner:
         """
         Plans velocity profile and returns a global trajectory object, or a Tuple [Global Trajectory, Spline Profile].
         :param reference_path: cr reference path
-        :param planning_problem: cr planning problem
+        :param velocity_planning_problem: cr planning problem
         :param planner_config: velocity planner config
         :param velocity_planner: selected velocity planner
-        :param resampling_distance: resampling distance to speed up profile
-        :param default_goal_velocity: default goal velocity is none is given
         :param return_spline_profile: if true, returns a Tuple with global_trajectory and spline_velocity_profile
         :return: returns either only the global trajectory or a Tuple with global_trajectory and spline_velocity_profile
         """
@@ -139,6 +139,9 @@ class IVelocityPlanner:
             self._logger.info(f"Initialized planner: {self._velocity_planner}")
         elif self._velocity_planner == ImplementedPlanners.BangBangSTPlanner:
             self._planner = BangBangSTPlanner(config=self._velocity_planner_config)
+            self._logger.info(f"Initialized planner:  {self._velocity_planner}")
+        elif self._velocity_planner == ImplementedPlanners.QPPlanner:
+            self._planner = QPPlanner(config=self._velocity_planner_config)
             self._logger.info(f"Initialized planner:  {self._velocity_planner}")
         else:
             self._logger.error(f"{self._velocity_planner} is not implemented")

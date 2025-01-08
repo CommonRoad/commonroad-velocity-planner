@@ -18,6 +18,7 @@ class VelocityPlannerConfig:
     a_min: float
     a_max: float
     a_lateral_max: float
+    a_long_comfort: float
     j_min: float
     j_max: float
     v_min_driving: float
