@@ -1,6 +1,6 @@
 [project]
 name = "commonroad-velocity-planner"
-version = "0.1.1"
+version = "0.2.1"
 description = "CommonRoad Velocity Planner Toolbox"
 authors = [{name = "Tobias Mascetta", email = "<tobias.mascetta@tum.de>"} , {name = "Kilian Northoff", email= "<kilian.northoff@tum.de"}]
 license = "BSD"
