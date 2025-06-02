@@ -58,3 +58,8 @@ If a goal position but no goal velocity is given, the planner uses the initial v
 ## Authors
 - Tobias Mascetta: tobias.mascetta[at]tum.de,
 - Kilian Northoff: kilian.northoff[at]tum.de
+
+
+## Paper
+T. Mascetta, K. Northoff and M. Althoff: CommonRoad Global Planner: A Toolbox for Global Motion Planning
+on Roads. Intelligent Vehicles Symposium (IV), 2025.
