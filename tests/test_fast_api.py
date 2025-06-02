@@ -6,6 +6,7 @@ from commonroad_route_planner.reference_path import ReferencePath
 import commonroad_route_planner.fast_api.fast_api as route_fapi
 
 import commonroad_velocity_planner.fast_api as fast_api
+from commonroad_velocity_planner.velocity_planner_interface import ImplementedPlanners
 
 
 class TestFastApi(unittest.TestCase):
@@ -63,4 +64,27 @@ class TestFastApi(unittest.TestCase):
             planning_problem=planning_problem
         )
 
+    def test_fast_api_planner_switch(self) -> None:
+        path_scenario = Path(__file__).parents[1] / "scenarios" / "DEU_GarchingCampus2D-2.xml"
 
+        # cr-io
+        scenario, planning_problem_set = CommonRoadFileReader(path_scenario).open()
+        planning_problem = list(planning_problem_set.planning_problem_dict.values())[0]
+
+        global_trajectory = fast_api.global_trajectory_from_scenario_and_planning_problem(
+            scenario=scenario,
+            planning_problem=planning_problem,
+            velocity_planner=ImplementedPlanners.QPPlanner
+        )
+
+        global_trajectory = fast_api.global_trajectory_from_scenario_and_planning_problem(
+            scenario=scenario,
+            planning_problem=planning_problem,
+            velocity_planner=ImplementedPlanners.LinearProgramPlanner
+        )
+
+        global_trajectory = fast_api.global_trajectory_from_scenario_and_planning_problem(
+            scenario=scenario,
+            planning_problem=planning_problem,
+            velocity_planner=ImplementedPlanners.BangBangSTPlanner
+        )

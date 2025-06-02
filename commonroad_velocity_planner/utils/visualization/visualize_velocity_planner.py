@@ -30,6 +30,7 @@ def visualize_global_trajectory(
     global_trajectory: GlobalTrajectory,
     save_path: str,
     size_x: float = 10.0,
+    point_radius: float = 1.0,
     save_img: bool = False,
     saving_format: str = "png",
     test: bool = False,
@@ -41,11 +42,11 @@ def visualize_global_trajectory(
     :param global_trajectory: global trajectory object
     :param save_path: path to save image to
     :param size_x: fig size
+    :param point_radius: radius of the displayed trajectory points
     :param save_img: if true, saves image, otherwise displays it
     :param saving_format: saving format
     :param test: if true, neither displays nor saves iamge
     """
-    plt.cla()
     _ = plt.figure(figsize=(20, 10))
 
     # get plot limits from reference path
@@ -72,6 +73,7 @@ def visualize_global_trajectory(
             velocity=global_trajectory.velocity_profile[idx],
             v_min=v_min,
             v_max=v_max,
+            point_radius=point_radius,
         )
 
     # draw scenario and renderer
@@ -110,7 +112,7 @@ def draw_route_state(
     velocity: float,
     v_min: float,
     v_max: float,
-    point_radius: float = 0.1,
+    point_radius: float = 1.0,
 ) -> None:
     """
     Draws reference_path state

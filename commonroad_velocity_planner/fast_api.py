@@ -7,7 +7,10 @@ from commonroad_route_planner.reference_path import ReferencePath
 
 # own code base
 from commonroad_velocity_planner.global_trajectory import GlobalTrajectory
-from commonroad_velocity_planner.velocity_planner_interface import IVelocityPlanner
+from commonroad_velocity_planner.velocity_planner_interface import (
+    IVelocityPlanner,
+    ImplementedPlanners,
+)
 from commonroad_velocity_planner.preprocessing.curvature_smoother import (
     SmoothingStrategy,
 )
@@ -27,26 +30,46 @@ from commonroad_velocity_planner.velocity_planning_problem import (
 def global_trajectory_from_scenario_and_planning_problem(
     scenario: Scenario,
     planning_problem: PlanningProblem,
+    velocity_planner: ImplementedPlanners = ImplementedPlanners.QPPlanner,
+    smoothing_strategy=SmoothingStrategy.ELASTIC_BAND,
+    config: VelocityPlannerConfig = ConfigurationBuilder().get_predefined_configuration(
+        planner_config=PlannerConfig.DEFAULT,
+    ),
 ) -> GlobalTrajectory:
     """
     Get global trajectory from scenario and planning problem
     :param scenario: CommonRoad scenario
     :param planning_problem: CommonRoad planning problem
+    :param velocity_planner: Velocity planning algorithm
+    :param smoothing_strategy: Smoothing strategy
+    :param config: velocity planner config
     :return: CommonRoad global trajectory
     """
     return global_trajectory_from_lanelet_network_and_planning_problem(
-        lanelet_network=scenario.lanelet_network, planning_problem=planning_problem
+        lanelet_network=scenario.lanelet_network,
+        planning_problem=planning_problem,
+        velocity_planner=velocity_planner,
+        smoothing_strategy=smoothing_strategy,
+        config=config,
     )
 
 
 def global_trajectory_from_lanelet_network_and_planning_problem(
     lanelet_network: LaneletNetwork,
     planning_problem: PlanningProblem,
+    velocity_planner: ImplementedPlanners = ImplementedPlanners.QPPlanner,
+    smoothing_strategy=SmoothingStrategy.ELASTIC_BAND,
+    config: VelocityPlannerConfig = ConfigurationBuilder().get_predefined_configuration(
+        planner_config=PlannerConfig.DEFAULT,
+    ),
 ) -> GlobalTrajectory:
     """
     Get global trajectory from lanelet network and planning problem
     :param lanelet_network: CommonRoad lanelet network
     :param planning_problem: CommonRoad planning problem
+    :param velocity_planner: Velocity planning algorithm
+    :param smoothing_strategy: Smoothing strategy
+    :param config: velocity planner config
     :return: CommonRoad global trajectory
     """
     # ========== retrieving reference path =========== #
@@ -57,20 +80,13 @@ def global_trajectory_from_lanelet_network_and_planning_problem(
         )
     )
 
-    # Velocity Planner config
-    velocity_planner_config: (
-        VelocityPlannerConfig
-    ) = ConfigurationBuilder().get_predefined_configuration(
-        planner_config=PlannerConfig.DEFAULT,
-    )
-
     # velocity planning problem
     vpp: VelocityPlanningProblem = VppBuilder().build_vpp(
         reference_path=reference_path,
         planning_problem=planning_problem,
         resampling_distance=2.0,
         default_goal_velocity=planning_problem.initial_state.velocity,
-        smoothing_strategy=SmoothingStrategy.ELASTIC_BAND,
+        smoothing_strategy=smoothing_strategy,
     )
 
     # Velocity Planner
@@ -78,35 +94,37 @@ def global_trajectory_from_lanelet_network_and_planning_problem(
 
     return vpi.plan_velocity(
         reference_path=reference_path,
-        planner_config=velocity_planner_config,
+        planner_config=config,
         velocity_planning_problem=vpp,
+        velocity_planner=velocity_planner,
     )
 
 
 def global_trajectory_from_cr_reference_path_and_planning_problem(
-    cr_reference_path: ReferencePath, planning_problem: PlanningProblem
+    cr_reference_path: ReferencePath,
+    planning_problem: PlanningProblem,
+    velocity_planner: ImplementedPlanners = ImplementedPlanners.QPPlanner,
+    smoothing_strategy=SmoothingStrategy.ELASTIC_BAND,
+    config: VelocityPlannerConfig = ConfigurationBuilder().get_predefined_configuration(
+        planner_config=PlannerConfig.DEFAULT,
+    ),
 ) -> GlobalTrajectory:
     """
     Get global trajectory from CommonRoad reference path and planning problem
     :param cr_reference_path: CommonRoad reference path object
     :param planning_problem: CommonRoad planning problem
+    :param velocity_planner: Velocity planning algorithm
+    :param smoothing_strategy: Smoothing strategy
+    :param config: velocity planner config
     :return: CommonRoad global trajectory
     """
-
-    # Velocity Planner config
-    velocity_planner_config: (
-        VelocityPlannerConfig
-    ) = ConfigurationBuilder().get_predefined_configuration(
-        planner_config=PlannerConfig.DEFAULT,
-    )
-
     # velocity planning problem
     vpp: VelocityPlanningProblem = VppBuilder().build_vpp(
         reference_path=cr_reference_path,
         planning_problem=planning_problem,
         resampling_distance=2.0,
         default_goal_velocity=planning_problem.initial_state.velocity,
-        smoothing_strategy=SmoothingStrategy.ELASTIC_BAND,
+        smoothing_strategy=smoothing_strategy,
     )
 
     # Velocity Planner
@@ -114,6 +132,7 @@ def global_trajectory_from_cr_reference_path_and_planning_problem(
 
     return vpi.plan_velocity(
         reference_path=cr_reference_path,
-        planner_config=velocity_planner_config,
+        planner_config=config,
         velocity_planning_problem=vpp,
+        velocity_planner=velocity_planner,
     )
