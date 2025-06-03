@@ -11,7 +11,7 @@ problem.
 
 >>>>>>> develop
 ### Example 1: From scenario and planning problem
-
+When giving a scenario, one can optionally choose to consider stop lines and traffic lights
 
 ```Python
 from commonroad.common.file_reader import CommonRoadFileReader
@@ -22,7 +22,8 @@ planning_problem = list(planning_problem_set.planning_problem_dict.values())[0]
 
 global_trajectory = fast_api.global_trajectory_from_scenario_and_planning_problem(
     scenario=scenario, 
-    planning_problem=planning_problem
+    planning_problem=planning_problem, 
+    use_regulatory_elements=True
 )
 ```
 
@@ -56,7 +57,7 @@ planning_problem = list(planning_problem_set.planning_problem_dict.values())[0]
 
 reference_path: ReferencePath = rfapi.generate_reference_path_from_scenario_and_planning_problem(
     scenario=scenario,
-    planning_problem=planning_problem
+    planning_problem=planning_problem, 
 )
 
 global_trajectory = fast_api.global_trajectory_from_cr_reference_path_and_planning_problem(
