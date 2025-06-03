@@ -96,6 +96,7 @@ class IVelocityPlanner:
         :param velocity_planning_problem: cr planning problem
         :param planner_config: velocity planner config
         :param velocity_planner: selected velocity planner
+        :param stop_positions: stop positions due to regulatory elements
         :param return_spline_profile: if true, returns a Tuple with global_trajectory and spline_velocity_profile
         :return: returns either only the global trajectory or a Tuple with global_trajectory and spline_velocity_profile
         """
@@ -111,7 +112,8 @@ class IVelocityPlanner:
 
         # plan and create spline profile
         self._spline_profile: SplineProfile = self._planner.plan_velocity(
-            problem=self._vpp, config=planner_config
+            problem=self._vpp,
+            config=planner_config,
         )
 
         # create global trajectory
