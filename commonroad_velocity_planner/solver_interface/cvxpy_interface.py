@@ -21,8 +21,7 @@ from commonroad_velocity_planner.velocity_planning_problem import (
 )
 from commonroad_velocity_planner.utils.exceptions import ConfigException
 
-# TODO: Make much prettier
-# TODO: Deconvolute interface
+from typing import List, Optional
 
 
 class CvxpyInterface:
@@ -452,6 +451,11 @@ class CvxpyInterface:
             ]
         )
 
+    def add_stop_constraints(self, stop_idxs: Optional[List[int]] = None) -> None:
+        if stop_idxs is not None:
+            for stop_idx in stop_idxs:
+                self._constraints.append(self._b[stop_idx] == 0)
+
     def add_v_min_constraint(
         self,
         initial_idx: int,
@@ -459,33 +463,60 @@ class CvxpyInterface:
         v_min_driving: float,
         offset_goal: int = 3,
         offset_start: int = 2,
+        offset_stop: int = 2,
+        stop_idxs: Optional[List[int]] = None,
     ) -> None:
         """
         Add minimum driving velocity constraint. This velocity must be kept at all times between initial_idx + offset start
-        and goal_idx - offset_goal
+        and goal_idx - offset_goal, except for stop idxs.
         :param initial_idx: initial state idx
         :param goal_idx: goal state idx
         :param v_min_driving: minimum driving velocity
         :param offset_goal: goal offset index
         :param offset_start: initial state offset index
-        :return:
         """
-        if initial_idx + offset_start >= goal_idx - offset_goal:
-            self._logger.warning(
-                f"V_min constrained not possible with offsets: initial_idx={initial_idx}, goal_idx={goal_idx}"
-            )
-            offset_goal = 0
-            offset_start = 1
+        if stop_idxs is not None:
+            if len(stop_idxs) > 0:
+                sorted_stop_idxs: List[int] = sorted(stop_idxs)
+                list_idxs: List[int] = [initial_idx + offset_start]
+                for idx in sorted_stop_idxs[:-2]:
+                    if initial_idx + offset_start <= idx:
+                        continue
+                    list_idxs.append(idx)
 
-        self._constraints.extend(
-            [
-                self._b[initial_idx + offset_start : goal_idx - offset_goal]
-                >= np.ones_like(
-                    self._b[initial_idx + offset_start : goal_idx - offset_goal]
+                if sorted_stop_idxs[-1] >= goal_idx - offset_goal:
+                    list_idxs.append(sorted_stop_idxs[-1])
+                else:
+                    list_idxs.append(goal_idx - offset_goal)
+
+                for idx in range(len(list_idxs) - 2):
+                    self._constraints.extend(
+                        [
+                            self._b[list_idxs[idx] : list_idxs[idx + 1]]
+                            >= np.ones_like(
+                                self._b[list_idxs[idx] : list_idxs[idx + 1]]
+                            )
+                            * (v_min_driving**2)
+                        ]
+                    )
+        else:
+
+            if initial_idx + offset_start >= goal_idx - offset_goal:
+                self._logger.warning(
+                    f"V_min constrained not possible with offsets: initial_idx={initial_idx}, goal_idx={goal_idx}"
                 )
-                * (v_min_driving**2)
-            ]
-        )
+                offset_goal = 0
+                offset_start = 1
+
+            self._constraints.extend(
+                [
+                    self._b[initial_idx + offset_start : goal_idx - offset_goal]
+                    >= np.ones_like(
+                        self._b[initial_idx + offset_start : goal_idx - offset_goal]
+                    )
+                    * (v_min_driving**2)
+                ]
+            )
 
     def add_slack_var(
         self, constraint_type: ConstraintType, weight: float

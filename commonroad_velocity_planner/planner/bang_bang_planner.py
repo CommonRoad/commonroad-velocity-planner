@@ -166,6 +166,16 @@ class BangBangSTPlanner(BaseVelocityPlanner):
             )
             velocities.append(v_spline)
 
+        for idx in problem.stop_idxs:
+            v_spline: CubicSpline = self._calculate_velocity_around_maximum(
+                curvature=curvature,
+                curvature_derivative=curvature_derivative,
+                s_start=problem.path_length_per_point[idx],
+                s_end=problem.path_length_per_point[-1],
+                v_0=0,
+            )
+            velocities.append(v_spline)
+
         # Add initial state as pseudo maximum
         states_from_start: List[VehicleState] = self._integrate_zero_slip(
             curvature=curvature,
@@ -200,10 +210,13 @@ class BangBangSTPlanner(BaseVelocityPlanner):
 
         # at each arc length calculate velocity profile
         vel_prof: List[float] = list()
-        for s in problem.path_length_per_point:
+        for idx, s in enumerate(problem.path_length_per_point):
             # 1. only positive values
             positive_values: List[float] = [
-                max(self._config.v_min_driving, interpolated_spline(s))
+                max(
+                    self._config.v_min_driving if idx not in problem.stop_idxs else 0.0,
+                    interpolated_spline(s),
+                )
                 for interpolated_spline in velocities
             ]
             vel_prof.append(min(positive_values))
@@ -275,6 +288,7 @@ class BangBangSTPlanner(BaseVelocityPlanner):
         curvature_derivative: Callable[[float], float],
         s_start: float,
         s_end: float,
+        v_0: Optional[float] = None,
     ) -> CubicSpline:
         """
         Cubic spline interpolated velocity around local maximum
@@ -282,6 +296,7 @@ class BangBangSTPlanner(BaseVelocityPlanner):
         :param curvature_derivative: curvature derivative
         :param s_start: start arc length
         :param s_end: end arc length
+        :param v_0: initial_velocity
         :return: cubic spline interpolated velocity in region around local maximum
         """
         vehicle_states_forward: List[VehicleState] = self._integrate_zero_slip(
@@ -289,12 +304,14 @@ class BangBangSTPlanner(BaseVelocityPlanner):
             curvature_derivative=curvature_derivative,
             s_start=s_start,
             s_end=s_end,
+            v0=v_0,
         )
         vehicle_states_backward: List[VehicleState] = self._integrate_zero_slip(
             curvature=curvature,
             curvature_derivative=curvature_derivative,
             s_start=s_start,
             s_end=0,
+            v0=v_0,
         )
 
         # give velocity profile as cubic spline
@@ -317,7 +334,7 @@ class BangBangSTPlanner(BaseVelocityPlanner):
         curvature_derivative: Callable[[float], float],
         s_start: float,
         s_end: float,
-        v0: float = None,
+        v0: Optional[float] = None,
     ) -> List[VehicleState]:
         """
         Integrate zero slip st model.

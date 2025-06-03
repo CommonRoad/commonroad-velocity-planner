@@ -101,6 +101,7 @@ class QPPlanner(BaseVelocityPlanner):
             initial_idx=problem.sampled_start_idx,
             goal_idx=problem.sampled_goal_idx,
             v_min_driving=self._config.v_min_driving,
+            stop_idxs=problem.stop_idxs,
         )
 
         # dynamic constraint
@@ -118,6 +119,9 @@ class QPPlanner(BaseVelocityPlanner):
         self._solver_interface.add_longitudinal_comfort_acceleration_constraint()
         # vmax are already included in the lateral acceleration limits, reimplementation not necessary
         self._solver_interface.add_velocity_constraint()
+
+        # stop constraints
+        self._solver_interface.add_stop_constraints(stop_idxs=problem.stop_idxs)
 
         # solve optimization problem
         return self._solver_interface.solve()

@@ -7,6 +7,8 @@ from commonroad.common.file_reader import CommonRoadFileReader
 import commonroad_route_planner.fast_api.fast_api as fapi
 from commonroad_route_planner.reference_path import ReferencePath
 
+from commonroad_velocity_planner.utils.regulatory_elements import get_regulatory_elements_position_on_path, StopPosition
+
 # own code base
 from commonroad_velocity_planner.utils.visualization.visualize_velocity_planner import visualize_global_trajectory
 from commonroad_velocity_planner.utils.visualization.visualize_quantities import (
@@ -19,13 +21,15 @@ from commonroad_velocity_planner.configuration.configuration_builder import Conf
 from commonroad_velocity_planner.configuration.velocity_planner_config import VelocityPlannerConfig
 from commonroad_velocity_planner.velocity_planning_problem import VelocityPlanningProblem, VppBuilder
 
+from typing import List
+
 
 def main(
     path_to_xml: str,
     output_dir_path: str,
     test: bool = False,
     save_img: bool = False,
-    planner: ImplementedPlanners = ImplementedPlanners.BangBangSTPlanner,
+    planner: ImplementedPlanners = ImplementedPlanners.QPPlanner,
 ) -> None:
 
     # cr-io
@@ -36,6 +40,14 @@ def main(
     reference_path: ReferencePath = fapi.generate_reference_path_from_scenario_and_planning_problem(
         scenario=scenario,
         planning_problem=planning_problem
+    )
+
+    # get regulatory element position
+    stop_positions: List[StopPosition] = get_regulatory_elements_position_on_path(
+        lanelet_ids=reference_path.lanelet_ids,
+        reference_path=reference_path.reference_path,
+        scenario=scenario,
+        current_time_step=0
     )
 
     t_0 = time.perf_counter()
@@ -49,6 +61,7 @@ def main(
         reference_path=reference_path,
         planning_problem=planning_problem,
         resampling_distance=2.0,
+        stop_positions=stop_positions,
         default_goal_velocity=planning_problem.initial_state.velocity,
         smoothing_strategy=SmoothingStrategy.ELASTIC_BAND,
     )
@@ -105,6 +118,9 @@ if __name__ == "__main__":
     output_dir_path: str = "/home/tmasc/projects/velocity_planner/commonroad-velocity-planner/output"
     xml = scenarios + "/" +"ZAM_handling1-1_1_T-1.xml"
     for xml in sorted(os.listdir(scenarios)):
+        if "Riesa" not in xml:
+            continue
+
         _xml = scenarios + "/" + xml
         main(path_to_xml=_xml, save_img=False, test=False, output_dir_path=output_dir_path)
 

@@ -88,3 +88,19 @@ class TestFastApi(unittest.TestCase):
             planning_problem=planning_problem,
             velocity_planner=ImplementedPlanners.BangBangSTPlanner
         )
+
+
+    def test_fast_api_reg_elements(self) -> None:
+        path_scenario = Path(__file__).parents[1] / "scenarios" / "DEU_GarchingCampus2D-2.xml"
+
+        # cr-io
+        scenario, planning_problem_set = CommonRoadFileReader(path_scenario).open()
+        planning_problem = list(planning_problem_set.planning_problem_dict.values())[0]
+
+        global_trajectory = fast_api.global_trajectory_from_scenario_and_planning_problem(
+            scenario=scenario,
+            planning_problem=planning_problem,
+            velocity_planner=ImplementedPlanners.QPPlanner,
+            use_regulatory_elements=True,
+            regulatory_elements_time_step=0
+        )

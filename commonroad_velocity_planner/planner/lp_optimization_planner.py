@@ -108,7 +108,12 @@ class LinearProgramPlanner(BaseVelocityPlanner):
             initial_idx=problem.sampled_start_idx,
             goal_idx=problem.sampled_goal_idx,
             v_min_driving=self._config.v_min_driving,
+            stop_idxs=problem.stop_idxs,
         )
+        self._solver_interface.add_stop_constraints(stop_idxs=problem.stop_idxs)
+
+        # stop constraints
+        self._solver_interface.add_stop_constraints(stop_idxs=problem.stop_idxs)
 
         # solve optimization problem
         return self._solver_interface.solve()
