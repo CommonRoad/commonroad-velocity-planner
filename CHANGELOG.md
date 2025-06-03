@@ -5,6 +5,7 @@
 - easy api improvements
 - adjusted visualization
 - bugfixes in velocity and acceleration visualization
+- optional consideration of traffic lights and stop lines
 
 
 ## [0.1.1]
