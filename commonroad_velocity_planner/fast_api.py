@@ -96,12 +96,47 @@ def global_trajectory_from_lanelet_network_and_planning_problem(
             lanelet_network=lanelet_network, planning_problem=planning_problem
         )
     )
+    return global_trajectory_from_cr_reference_path_and_planning_problem(
+        cr_reference_path=reference_path,
+        planning_problem=planning_problem,
+        lanelet_network=lanelet_network,
+        velocity_planner=velocity_planner,
+        smoothing_strategy=smoothing_strategy,
+        config=config,
+        use_regulatory_elements=use_regulatory_elements,
+        regulatory_elements_time_step=regulatory_elements_time_step,
+    )
 
+
+def global_trajectory_from_cr_reference_path_and_planning_problem(
+    cr_reference_path: ReferencePath,
+    planning_problem: PlanningProblem,
+    lanelet_network: LaneletNetwork,
+    velocity_planner: ImplementedPlanners = ImplementedPlanners.QPPlanner,
+    smoothing_strategy=SmoothingStrategy.ELASTIC_BAND,
+    config: VelocityPlannerConfig = ConfigurationBuilder().get_predefined_configuration(
+        planner_config=PlannerConfig.DEFAULT,
+    ),
+    use_regulatory_elements: bool = False,
+    regulatory_elements_time_step: int = 0,
+) -> GlobalTrajectory:
+    """
+    Get global trajectory from CommonRoad reference path and planning problem.
+    :param cr_reference_path: CommonRoad reference path object
+    :param planning_problem: CommonRoad planning problem
+    :param lanelet_network: CommonRoad lanelet network
+    :param velocity_planner: Velocity planning algorithm
+    :param smoothing_strategy: Smoothing strategy
+    :param config: velocity planner config
+    :param use_regulatory_elements: if true, uses regulatory elements
+    :param regulatory_elements_time_step: if use_regulatory_elements, this is the time step the traffic lights are set
+    :return: CommonRoad global trajectory
+    """
     # get regulatory element position
     stop_positions: List[StopPosition] = (
         get_regulatory_elements_position_on_path(
-            lanelet_ids=reference_path.lanelet_ids,
-            reference_path=reference_path.reference_path,
+            lanelet_ids=cr_reference_path.lanelet_ids,
+            reference_path=cr_reference_path.reference_path,
             lanelet_network=lanelet_network,
             current_time_step=regulatory_elements_time_step,
         )
@@ -111,50 +146,12 @@ def global_trajectory_from_lanelet_network_and_planning_problem(
 
     # velocity planning problem
     vpp: VelocityPlanningProblem = VppBuilder().build_vpp(
-        reference_path=reference_path,
-        planning_problem=planning_problem,
-        resampling_distance=2.0,
-        default_goal_velocity=planning_problem.initial_state.velocity,
-        smoothing_strategy=smoothing_strategy,
-        stop_positions=stop_positions,
-    )
-
-    # Velocity Planner
-    vpi = IVelocityPlanner()
-
-    return vpi.plan_velocity(
-        reference_path=reference_path,
-        planner_config=config,
-        velocity_planning_problem=vpp,
-        velocity_planner=velocity_planner,
-    )
-
-
-def global_trajectory_from_cr_reference_path_and_planning_problem(
-    cr_reference_path: ReferencePath,
-    planning_problem: PlanningProblem,
-    velocity_planner: ImplementedPlanners = ImplementedPlanners.QPPlanner,
-    smoothing_strategy=SmoothingStrategy.ELASTIC_BAND,
-    config: VelocityPlannerConfig = ConfigurationBuilder().get_predefined_configuration(
-        planner_config=PlannerConfig.DEFAULT,
-    ),
-) -> GlobalTrajectory:
-    """
-    Get global trajectory from CommonRoad reference path and planning problem. Note that this cannot use regulatory elements
-    :param cr_reference_path: CommonRoad reference path object
-    :param planning_problem: CommonRoad planning problem
-    :param velocity_planner: Velocity planning algorithm
-    :param smoothing_strategy: Smoothing strategy
-    :param config: velocity planner config
-    :return: CommonRoad global trajectory
-    """
-    # velocity planning problem
-    vpp: VelocityPlanningProblem = VppBuilder().build_vpp(
         reference_path=cr_reference_path,
         planning_problem=planning_problem,
         resampling_distance=2.0,
         default_goal_velocity=planning_problem.initial_state.velocity,
         smoothing_strategy=smoothing_strategy,
+        stop_positions=stop_positions,
     )
 
     # Velocity Planner

@@ -1,8 +1,8 @@
 # Changelog
 
 
-## [0.2.1]
-- easy api improvements
+## [1.0.0]
+- easy api changes
 - adjusted visualization
 - bugfixes in velocity and acceleration visualization
 - optional consideration of traffic lights and stop lines
