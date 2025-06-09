@@ -61,7 +61,8 @@ class TestFastApi(unittest.TestCase):
 
         global_trajectory = fast_api.global_trajectory_from_cr_reference_path_and_planning_problem(
             cr_reference_path=reference_path,
-            planning_problem=planning_problem
+            planning_problem=planning_problem,
+            lanelet_network=scenario.lanelet_network
         )
 
     def test_fast_api_planner_switch(self) -> None:
