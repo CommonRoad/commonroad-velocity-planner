@@ -45,7 +45,7 @@ def main(
     stop_positions = get_regulatory_elements_position_on_path(
         lanelet_ids=reference_path.lanelet_ids,
         reference_path=reference_path.reference_path,
-        scenario=scenario,
+        lanelet_network=scenario.lanelet_network,
         current_time_step=0
     )
 

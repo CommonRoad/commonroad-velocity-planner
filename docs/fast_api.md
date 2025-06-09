@@ -65,3 +65,21 @@ global_trajectory = fast_api.global_trajectory_from_cr_reference_path_and_planni
     planning_problem=planning_problem
 )
 ```
+
+
+### Example 4: With traffic lights and stop lines
+
+```Python
+from commonroad.common.file_reader import CommonRoadFileReader
+import commonroad_velocity_planner.fast_api as fast_api
+
+scenario, planning_problem_set = CommonRoadFileReader("PATH/TO/YOUR/SCENARIO").open()
+planning_problem = list(planning_problem_set.planning_problem_dict.values())[0]
+
+global_trajectory = fast_api.global_trajectory_from_lanelet_network_and_planning_problem(
+    lanelet_network=scenario.lanelet_network, 
+    planning_problem=planning_problem, 
+    use_regulatory_elements=True, 
+    regulatory_elements_time_step=0
+)
+```

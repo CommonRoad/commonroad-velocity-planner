@@ -1,10 +1,11 @@
 from dataclasses import dataclass
 
+from commonroad.scenario.lanelet import LaneletNetwork
 from scipy.spatial.kdtree import KDTree
 from typing import List, Set
 
 import numpy as np
-from commonroad.scenario.scenario import Scenario, Lanelet
+from commonroad.scenario.scenario import Lanelet
 from commonroad.scenario.traffic_light import (
     TrafficLight,
     TrafficLightState,
@@ -22,7 +23,7 @@ class StopPosition:
 
 def get_regulatory_elements_position_on_path(
     lanelet_ids: List[int],
-    scenario: Scenario,
+    lanelet_network: LaneletNetwork,
     reference_path: np.ndarray,
     current_time_step: int = 0,
     th_lane_change: float = 1.0,
@@ -31,21 +32,19 @@ def get_regulatory_elements_position_on_path(
     Find indices of regulatory elements on reference path
     :param lanelet_ids: lanelet ids of route
     :param reference_path: (n,2) np.ndarray of reference path points
-    :param scenario: CR Scenario
+    :param lanelet_network: CR laneletnetwork
     :return: list of path traffic light indices
     """
     stop_positions: List[StopPosition] = list()
     kd_tree: KDTree = KDTree(reference_path)
 
     for lanelet_id in lanelet_ids:
-        lanelet: Lanelet = scenario.lanelet_network.find_lanelet_by_id(lanelet_id)
+        lanelet: Lanelet = lanelet_network.find_lanelet_by_id(lanelet_id)
         traffic_light_ids: Set[int] = lanelet.traffic_lights
         if len(traffic_light_ids) > 0:
             # TODO: check which traffic light is actually the right one
-            traffic_light: TrafficLight = (
-                scenario.lanelet_network.find_traffic_light_by_id(
-                    list(traffic_light_ids)[0]
-                )
+            traffic_light: TrafficLight = lanelet_network.find_traffic_light_by_id(
+                list(traffic_light_ids)[0]
             )
             if traffic_light.active:
                 if traffic_light.traffic_light_cycle.active:
