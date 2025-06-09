@@ -21,6 +21,7 @@ from commonroad_velocity_planner.preprocessing.curvature_smoother import Smoothi
 from commonroad_velocity_planner.configuration.configuration_builder import ConfigurationBuilder, PlannerConfig
 from commonroad_velocity_planner.configuration.velocity_planner_config import VelocityPlannerConfig
 from commonroad_velocity_planner.velocity_planning_problem import VelocityPlanningProblem, VppBuilder
+from commonroad_velocity_planner.utils.regulatory_elements import get_regulatory_elements_position_on_path
 
 
 def main(
@@ -30,7 +31,7 @@ def main(
         save_img: bool = False,
         planner: ImplementedPlanners = ImplementedPlanners.LinearProgramPlanner,
 ) -> None:
-    # cr-io
+        # cr-io
     scenario, planning_problem_set = CommonRoadFileReader(path_to_xml).open()
     planning_problem = list(planning_problem_set.planning_problem_dict.values())[0]
 
@@ -38,6 +39,14 @@ def main(
     reference_path: ReferencePath = rfapi.generate_reference_path_from_scenario_and_planning_problem(
         scenario=scenario,
         planning_problem=planning_problem
+    )
+
+    # get regulatory element position
+    stop_positions = get_regulatory_elements_position_on_path(
+        lanelet_ids=reference_path.lanelet_ids,
+        reference_path=reference_path.reference_path,
+        lanelet_network=scenario.lanelet_network,
+        current_time_step=0
     )
 
     t_0 = time.perf_counter()
@@ -51,6 +60,7 @@ def main(
         reference_path=reference_path,
         planning_problem=planning_problem,
         resampling_distance=2.0,
+        stop_positions=stop_positions,
         default_goal_velocity=planning_problem.initial_state.velocity,
         smoothing_strategy=SmoothingStrategy.ELASTIC_BAND,
     )

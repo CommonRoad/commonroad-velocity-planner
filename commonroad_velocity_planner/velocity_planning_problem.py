@@ -18,6 +18,7 @@ from commonroad.planning.planning_problem import PlanningProblem
 from commonroad_velocity_planner.utils.planning_problem import (
     get_goal_velocity,
     get_goal_acceleration,
+    project_point_on_ref_path,
 )
 from commonroad_velocity_planner.preprocessing.curvature_smoother import (
     SmoothingStrategy,
@@ -30,6 +31,9 @@ from commonroad_velocity_planner.utils.planning_problem import (
 from commonroad_velocity_planner.utils.polyline_operations import (
     cubic_spline_arc_interpolation_2D,
 )
+from commonroad_velocity_planner.utils.regulatory_elements import StopPosition
+
+from typing import Optional, List
 
 
 @dataclass
@@ -44,6 +48,8 @@ class VelocityPlanningProblem:
 
     sampled_start_idx: int
     sampled_goal_idx: int
+
+    stop_idxs: List[int]
 
     interpoint_distance: float
     path_length_per_point: np.ndarray
@@ -104,6 +110,7 @@ class VppBuilder:
         reference_path: ReferencePath,
         planning_problem: PlanningProblem,
         resampling_distance: float = 2,
+        stop_positions: Optional[List[StopPosition]] = None,
         smoothing_strategy: SmoothingStrategy = SmoothingStrategy.ELASTIC_BAND,
         default_goal_velocity: float = 0.0,
         default_goal_acceleration: float = 0.0,
@@ -178,6 +185,17 @@ class VppBuilder:
             resampled_reference_path, planning_problem.goal
         )
 
+        # add stop position
+        stop_idxs: List[int] = list()
+        if stop_positions is not None:
+            for stop_position in stop_positions:
+                stop_idxs.append(
+                    project_point_on_ref_path(
+                        reference_path=resampled_reference_path,
+                        point=stop_position.stop_line_position,
+                    )
+                )
+
         if initial_idx >= goal_idx:
             _logger = logging.getLogger(
                 name="IVelocityPlanner.velocity_planning_problem.VppBuilder"
@@ -200,6 +218,7 @@ class VppBuilder:
             sampled_ref_path=resampled_reference_path,
             sampled_start_idx=initial_idx,
             sampled_goal_idx=goal_idx,
+            stop_idxs=stop_idxs,
             interpoint_distance=interpoint_distance,
             path_length_per_point=path_length_per_point,
             path_curvature=path_curvature,

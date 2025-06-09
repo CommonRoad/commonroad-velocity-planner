@@ -36,10 +36,13 @@ class SplineProfile:
             acceleration_profile[1:] = (
                 # t = delta_v / s & a = delta_v / t --> delta_v2 / s = a
                 np.power(np.diff(velocity_profile), 2)
+                * np.sign(np.diff(velocity_profile))
                 / interpoint_distance
             )
             acceleration_profile[0] = acceleration_profile[1]
-        self._acceleration_profile = acceleration_profile
+        self._acceleration_profile = np.clip(
+            acceleration_profile, a_min=-8.0, a_max=8.0
+        )
 
         self._acceleration_spline = CubicSpline(
             self._path_length_per_point, self._acceleration_profile
@@ -100,10 +103,10 @@ class SplineProfile:
 
     def interpolate_velocity_at_arc_lenth(
         self,
-        s: [np.ndarray],
+        s: np.ndarray,
         clip_min: float = 0.0,
         goal_velocity: float = None,
-    ) -> [np.ndarray]:
+    ) -> np.ndarray:
         """
         Interpoalte velocity at arc length
         :param s: arc
@@ -130,8 +133,8 @@ class SplineProfile:
         return interpolation
 
     def interpolate_acceleration_at_arc_lenth(
-        self, s: [np.ndarray], goal_acceleration: float = 0
-    ) -> [np.ndarray]:
+        self, s: np.ndarray, goal_acceleration: float = 0
+    ) -> np.ndarray:
         """
         Interpoalte acceleration at arc length
         :param s: arc
@@ -149,5 +152,7 @@ class SplineProfile:
                 * goal_acceleration,
             )
         )
+
+        interpolation = np.clip(interpolation, a_min=-8.0, a_max=8.0)
 
         return interpolation

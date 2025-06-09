@@ -163,14 +163,15 @@ def factory_from_reference_path_and_velocity_profile(
     velocity_array[:route_start_idx] = (
         np.ones_like(velocity_array[:route_start_idx]) * velocity_array[route_start_idx]
     )
-    acceleration_array[:route_start_idx] = np.zeros_like(
-        acceleration_array[:route_start_idx]
+    acceleration_array[:route_start_idx] = np.ones_like(
+        acceleration_array[:route_start_idx] * acceleration_array[route_start_idx]
     )
     velocity_array[route_goal_idx:] = (
         np.ones_like(velocity_array[route_goal_idx:]) * velocity_array[route_goal_idx]
     )
-    acceleration_array[route_goal_idx:] = np.zeros_like(
-        acceleration_array[route_goal_idx:]
+    acceleration_array[route_goal_idx:] = (
+        np.ones_like(acceleration_array[route_goal_idx:])
+        * acceleration_array[route_goal_idx]
     )
 
     average_velocity: float = np.average(velocity_array, axis=0)
